@@ -221,7 +221,7 @@ function onScroll() {
 </script>
 
 <template>
-  <section class="editor-panel">
+  <section class="editor-panel" :class="{ 'toolbar-collapsed': !toolbarExpanded }">
     <EditorToolbar
       v-model:expanded="toolbarExpanded"
       :line-count="lineCount"

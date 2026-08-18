@@ -30,6 +30,7 @@ button svg { width: 17px; height: 17px; fill: currentColor; }
 .toc-panel { border-right: 1px solid var(--line); }
 .preview-panel { position: relative; display: grid; grid-template-rows: 48px minmax(0, 1fr); }
 .editor-panel { display: grid; grid-template-rows: 48px auto minmax(0, 1fr); }
+.editor-panel.toolbar-collapsed { grid-template-rows: 48px minmax(0, 1fr); }
 .preview-actions { position: relative; display: flex; flex: none; align-items: center; gap: 8px; }
 
 .appearance-popover {
