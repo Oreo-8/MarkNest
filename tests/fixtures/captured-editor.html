@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><link rel="stylesheet" href="/dist/editor.css"><title>Capture Import Test</title></head>
+<body>
+  <div id="app"></div>
+  <script>
+    const captured = {
+      name: '组件化方案.md',
+      content: '# 组件化方案\n\n## 你\n\n测试问题\n\n## ChatGPT\n\n测试回答',
+      sourceUrl: 'https://chatgpt.com/c/test'
+    }
+    window.chrome = {
+      storage: { local: {
+        async get(key) { return key === 'capture-test' ? { [key]: captured } : {} },
+        async set() {},
+        async remove() {}
+      } },
+      extension: { async isAllowedFileSchemeAccess() { return true } },
+      runtime: { async sendMessage() { return { ok: true } } }
+    }
+  </script>
+  <script src="/dist/editor.js"></script>
+</body>
+</html>

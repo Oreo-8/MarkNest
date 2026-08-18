@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="/dist/popup.css">
+  <title>MarkNest Popup Test</title>
+</head>
+<body>
+  <div id="popup-app"></div>
+  <script>
+    window.close = function () { document.body.dataset.closed = '1' }
+    window.chrome = {
+      tabs: { query: async function () { return [{ url: 'https://chatgpt.com/c/test' }] } },
+      runtime: {
+        getURL: function (path) { return '/dist/' + path },
+        sendMessage: async function (message) {
+          document.body.dataset.lastMessage = message.type
+          return { ok: true }
+        }
+      }
+    }
+  </script>
+  <script type="module" src="/dist/popup.js"></script>
+</body>
+</html>

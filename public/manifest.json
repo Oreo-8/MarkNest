@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "MarkNest",
+  "version": "2.1.0",
+  "description": "在浏览器中阅读、编辑和保存本地 Markdown 文件。",
+  "permissions": ["storage", "activeTab", "scripting", "downloads"],
+  "host_permissions": ["file:///*", "https://chatgpt.com/*", "https://chat.openai.com/*"],
+  "icons": {
+    "16": "icons/icon-16.png",
+    "32": "icons/icon-32.png",
+    "48": "icons/icon-48.png",
+    "128": "icons/icon-128.png"
+  },
+  "action": {
+    "default_title": "打开 MarkNest",
+    "default_popup": "popup.html",
+    "default_icon": { "16": "icons/icon-16.png", "32": "icons/icon-32.png" }
+  },
+  "background": { "service_worker": "background.js" },
+  "web_accessible_resources": [
+    {
+      "resources": ["editor.html"],
+      "matches": ["file:///*"]
+    }
+  ],
+  "content_scripts": [
+    {
+      "matches": ["file:///*.md", "file:///*.markdown"],
+      "js": ["file-viewer.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "commands": {
+    "open-editor": {
+      "suggested_key": { "default": "Ctrl+Shift+M", "mac": "Command+Shift+M" },
+      "description": "打开 MarkNest"
+    }
+  }
+}

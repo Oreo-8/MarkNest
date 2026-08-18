@@ -1,0 +1,38 @@
+{
+  "name": "marknest",
+  "private": true,
+  "version": "2.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build && vite build -c vite.popup.config.ts",
+    "release": "pnpm build && cd dist && zip -qr MarkNest.zip . -x MarkNest.zip",
+    "typecheck": "vue-tsc --noEmit",
+    "preview": "vite preview"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "dompurify": "^3.2.6",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.18.4",
+    "markdown-it": "^14.1.0",
+    "markdown-it-task-lists": "^2.1.1",
+    "mermaid": "^11.16.1",
+    "turndown": "^7.2.4",
+    "vue": "^3.5.18"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.326",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^22.13.10",
+    "@types/turndown": "^5.0.6",
+    "@unocss/preset-uno": "65.5.0",
+    "@unocss/reset": "65.5.0",
+    "@vitejs/plugin-vue": "^5.2.3",
+    "esbuild": "^0.25.8",
+    "typescript": "~5.8.3",
+    "unocss": "65.5.0",
+    "vite": "^6.1.0",
+    "vue-tsc": "^3.0.4"
+  }
+}

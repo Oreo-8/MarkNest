@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>组件化方案 - ChatGPT</title></head>
+<body>
+  <main>
+    <h1>组件化方案</h1>
+    <article data-testid="conversation-turn-1">
+      <div data-message-author-role="user"><p>请给我一个 <strong>Vue 组件</strong> 示例。</p></div>
+    </article>
+    <article data-testid="conversation-turn-2">
+      <div data-message-author-role="assistant">
+        <p>可以这样写：</p>
+        <pre><code class="language-ts">const ready: boolean = true</code></pre>
+        <ul><li>组件独立</li><li>类型安全</li></ul>
+        <button>复制</button>
+      </div>
+    </article>
+  </main>
+  <script>
+    window.chrome = { runtime: { onMessage: { addListener(handler) { window.captureHandler = handler } } } }
+  </script>
+  <script src="/dist/chatgpt-capture.js"></script>
+  <script>
+    window.captureHandler({ type: 'CAPTURE_CHATGPT_PAGE' }, {}, function (result) {
+      const output = document.createElement('pre')
+      output.id = 'capture-result'
+      output.textContent = JSON.stringify(result)
+      document.body.append(output)
+    })
+  </script>
+</body>
+</html>
