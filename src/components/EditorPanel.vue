@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
-import BaseIconButton from './BaseIconButton.vue'
+import EditorToolbar from './EditorToolbar.vue'
 
 const props = defineProps<{ modelValue: string }>()
 const emit = defineEmits<{
@@ -218,98 +218,31 @@ function onScroll() {
   emit('scroll-progress', max > 0 ? textarea.value.scrollTop / max : 0)
 }
 
-function alignDropdown(event: PointerEvent) {
-  const dropdown = (event.target as HTMLElement).closest<HTMLElement>('.format-dropdown')
-  const panel = dropdown?.closest<HTMLElement>('.editor-panel')
-  const menu = dropdown?.querySelector<HTMLElement>('.format-dropdown-menu')
-  if (!dropdown || !panel || !menu) return
-  const dropdownRect = dropdown.getBoundingClientRect()
-  const panelRect = panel.getBoundingClientRect()
-  dropdown.classList.toggle('align-right', dropdownRect.left + menu.offsetWidth > panelRect.right - 8)
-}
 </script>
 
 <template>
   <section class="editor-panel">
-    <div class="panel-title">
-      <div class="flex items-center gap-2.5 tabular-nums"><span>{{ lineCount }} 行</span><span>{{ modelValue.length }} 字符</span></div>
-      <div class="flex items-center gap-1">
-        <BaseIconButton
-          :title="toolbarExpanded ? '收起格式工具栏' : '展开格式工具栏'"
-          :aria-label="toolbarExpanded ? '收起格式工具栏' : '展开格式工具栏'"
-          :aria-expanded="toolbarExpanded"
-          @click="toolbarExpanded = !toolbarExpanded"
-        >
-          <svg v-if="toolbarExpanded" viewBox="0 0 24 24"><path d="M5 5h14v2H5V5Zm0 5h14v2H5v-2Zm7 4 5 5H7l5-5Z" /></svg>
-          <svg v-else viewBox="0 0 24 24"><path d="M5 5h14v2H5V5Zm0 5h14v2H5v-2Zm-5 2 5-5H7l5 5Z" /></svg>
-        </BaseIconButton>
-        <BaseIconButton title="保存源文件（首次需要选择授权）" aria-label="保存源文件" @click="emit('save')"><svg viewBox="0 0 24 24"><path d="M5 3h12l3 3v15H4V3h1Zm1 2v14h12V7.2L15.8 5H15v5H7V5H6Zm3 0v3h4V5H9Zm-1 8h8v4H8v-4Z" /></svg></BaseIconButton>
-        <BaseIconButton title="另存为" aria-label="另存为" @click="emit('save-as')"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v5h-2V8h-4V4H6v16h6v2H4V2h2Zm9 12h2v3h3v2h-3v3h-2v-3h-3v-2h3v-3Z" /></svg></BaseIconButton>
-      </div>
-    </div>
-
-    <div v-if="toolbarExpanded" class="format-toolbar" role="toolbar" aria-label="文本格式" @pointerover="alignDropdown">
-      <div class="format-dropdown heading-dropdown">
-        <button type="button" class="format-dropdown-trigger" aria-haspopup="menu" title="正文与标题" @mousedown="rememberSelection">正文<span class="dropdown-arrow">▾</span></button>
-        <div class="format-dropdown-menu" role="menu" aria-label="正文与标题">
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(0)">正文</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(1)">标题 1</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(2)">标题 2</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(3)">标题 3</button>
-        </div>
-      </div>
-      <button type="button" class="format-btn format-bold" title="加粗 (Ctrl/⌘ B)" @mousedown.prevent @click="wrapSelection('**', '**', '粗体文字')">B</button>
-      <button type="button" class="format-btn format-italic" title="斜体 (Ctrl/⌘ I)" @mousedown.prevent @click="wrapSelection('*', '*', '斜体文字')">I</button>
-      <button type="button" class="format-btn format-strike" title="删除线" @mousedown.prevent @click="wrapSelection('~~', '~~', '删除文字')">S</button>
-      <button type="button" class="format-btn format-code" title="行内代码" @mousedown.prevent @click="wrapSelection('`', '`', '代码')">&lt;/&gt;</button>
-      <button type="button" class="format-btn format-text" title="高亮" @mousedown.prevent @click="wrapSelection('==', '==', '高亮内容')">高亮</button>
-      <button type="button" class="format-btn" title="代码块" @mousedown.prevent @click="insertBlock('```\n', '在这里输入代码', '\n```')">{ }</button>
-      <button type="button" class="format-btn format-text" title="引用" @mousedown.prevent @click="toggleLinePrefix(/^&gt;\s?/, '&gt; ')">引用</button>
-      <div class="format-dropdown callout-dropdown">
-        <button type="button" class="format-dropdown-trigger" aria-haspopup="menu" title="提示块" @mousedown="rememberSelection">提示块<span class="dropdown-arrow">▾</span></button>
-        <div class="format-dropdown-menu" role="menu" aria-label="提示块">
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertCallout('NOTE')">ℹ 提示</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertCallout('TIP')">✦ 技巧</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertCallout('IMPORTANT')">★ 重要</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertCallout('WARNING')">⚠ 警告</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertCallout('SUCCESS')">✓ 成功</button>
-        </div>
-      </div>
-      <div class="format-dropdown list-dropdown">
-        <button type="button" class="format-dropdown-trigger" aria-haspopup="menu" title="列表" @mousedown="rememberSelection">列表<span class="dropdown-arrow">▾</span></button>
-        <div class="format-dropdown-menu" role="menu" aria-label="列表">
-          <button type="button" role="menuitem" @mousedown.prevent @click="applyList('bullet')">无序列表</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="applyList('ordered')">有序列表</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="applyList('task')">任务列表</button>
-        </div>
-      </div>
-      <button type="button" class="format-btn format-text" title="插入链接 (Ctrl/⌘ K)" @mousedown.prevent @click="insertLink(false)">链接</button>
-      <div class="format-dropdown formula-dropdown">
-        <button type="button" class="format-dropdown-trigger" aria-haspopup="menu" title="数学公式" @mousedown="rememberSelection">公式<span class="dropdown-arrow">▾</span></button>
-        <div class="format-dropdown-menu" role="menu" aria-label="数学公式">
-          <button type="button" role="menuitem" @mousedown.prevent @click="wrapSelection('$', '$', 'E = mc^2')">行内公式</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertBlock('$$\n', 'E = mc^2', '\n$$')">公式块</button>
-        </div>
-      </div>
-      <button type="button" class="format-btn format-text" title="插入 Mermaid 流程图" @mousedown.prevent @click="insertBlock('```mermaid\n', 'flowchart LR\n  A[开始] --&gt; B[结束]', '\n```')">流程图</button>
-      <div class="format-dropdown more-dropdown">
-        <button type="button" class="format-dropdown-trigger" aria-haspopup="menu" title="更多格式" @mousedown="rememberSelection">更多<span class="dropdown-arrow">▾</span></button>
-        <div class="format-dropdown-menu" role="menu" aria-label="更多格式">
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(4)">标题 4</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(5)">标题 5</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="setHeading(6)">标题 6</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertLink(true)">插入图片</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertTable">插入表格</button>
-          <button type="button" role="menuitem" @mousedown.prevent @click="insertBlock('', '---', '', false)">插入分割线</button>
-        </div>
-      </div>
-      <span class="format-separator"></span>
-      <div class="format-action-group">
-        <button type="button" class="format-btn format-text" title="清除选中内容的格式" @mousedown.prevent @click="clearFormatting">清除</button>
-        <button type="button" class="format-btn" :disabled="!canUndo" title="撤销 (Ctrl/⌘ Z)" @mousedown.prevent @click="restoreHistory(historyIndex - 1)">↶</button>
-        <button type="button" class="format-btn" :disabled="!canRedo" title="重做 (Ctrl/⌘ Shift Z)" @mousedown.prevent @click="restoreHistory(historyIndex + 1)">↷</button>
-      </div>
-    </div>
+    <EditorToolbar
+      v-model:expanded="toolbarExpanded"
+      :line-count="lineCount"
+      :character-count="modelValue.length"
+      :can-undo="canUndo"
+      :can-redo="canRedo"
+      @remember-selection="rememberSelection"
+      @save="emit('save')"
+      @save-as="emit('save-as')"
+      @heading="setHeading"
+      @wrap="wrapSelection($event.prefix, $event.suffix, $event.placeholder)"
+      @insert-block="insertBlock($event.before, $event.content, $event.after, $event.selectContent)"
+      @quote="toggleLinePrefix(/^>\s?/, '> ')"
+      @callout="insertCallout"
+      @list="applyList"
+      @link="insertLink"
+      @table="insertTable"
+      @clear="clearFormatting"
+      @undo="restoreHistory(historyIndex - 1)"
+      @redo="restoreHistory(historyIndex + 1)"
+    />
 
     <textarea
       ref="textarea" :value="modelValue" spellcheck="false" placeholder="# 从这里开始写 Markdown…"

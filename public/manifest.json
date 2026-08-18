@@ -19,13 +19,14 @@
   "background": { "service_worker": "background.js" },
   "web_accessible_resources": [
     {
-      "resources": ["editor.html"],
+      "resources": ["file-app.js", "assets/*.js", "assets/*.woff", "assets/*.woff2", "assets/*.ttf"],
       "matches": ["file:///*"]
     }
   ],
   "content_scripts": [
     {
       "matches": ["file:///*.md", "file:///*.markdown"],
+      "css": ["file-viewer.css"],
       "js": ["file-viewer.js"],
       "run_at": "document_idle"
     }

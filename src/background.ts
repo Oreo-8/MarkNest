@@ -111,41 +111,6 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
     type: string
     url?: string
     tabId?: number
-    file?: { name?: unknown; content?: unknown; sourceUrl?: unknown }
-  }
-
-  if (payload.type === 'OPEN_LOCAL_FILE') {
-    void (async () => {
-      try {
-        const file = payload.file
-        const tabId = sender.tab?.id
-        if (
-          tabId == null
-          || !file
-          || typeof file.name !== 'string'
-          || typeof file.content !== 'string'
-          || typeof file.sourceUrl !== 'string'
-        ) {
-          throw new Error('本地 Markdown 文件信息不完整')
-        }
-
-        const captureId = crypto.randomUUID()
-        await chrome.storage.local.set({
-          [`capture-${captureId}`]: {
-            name: file.name,
-            content: file.content,
-            sourceUrl: file.sourceUrl,
-            unsaved: false,
-            updatedAt: Date.now(),
-          },
-        })
-        const editorUrl = `${chrome.runtime.getURL('editor.html')}?capture=${captureId}&session=${captureId}`
-        sendResponse({ ok: true, editorUrl })
-      } catch (error) {
-        sendResponse({ ok: false, error: errorMessage(error) })
-      }
-    })()
-    return true
   }
 
   if (payload.type === 'OPEN_EDITOR') {

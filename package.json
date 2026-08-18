@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build && vite build -c vite.popup.config.ts",
+    "build": "vue-tsc --noEmit && vite build && vite build -c vite.file.config.ts && vite build -c vite.popup.config.ts",
     "release": "pnpm build && cd dist && zip -qr MarkNest.zip . -x MarkNest.zip",
     "typecheck": "vue-tsc --noEmit",
     "preview": "vite preview"
