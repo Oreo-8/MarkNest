@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
+import { findAiSite } from '../ai-sites'
 
-const onChatGPT = ref(false)
+const activeSite = ref<ReturnType<typeof findAiSite>>()
 const busy = ref(false)
 const status = ref('')
 const statusKind = ref<'info' | 'error' | 'success'>('info')
@@ -19,11 +20,11 @@ async function newEditor() {
 }
 
 async function captureConversation() {
-  if (!onChatGPT.value || busy.value) return
+  if (!activeSite.value || busy.value) return
   busy.value = true
   setStatus('正在整理当前对话，随后请选择保存位置…')
   try {
-    const result = await chrome.runtime.sendMessage({ type: 'CAPTURE_CHATGPT', tabId: activeTabId }) as { ok?: boolean; cancelled?: boolean; error?: string }
+    const result = await chrome.runtime.sendMessage({ type: 'CAPTURE_AI_CONVERSATION', tabId: activeTabId }) as { ok?: boolean; cancelled?: boolean; error?: string }
     if (!result?.ok) throw new Error(result?.error || '对话收录失败')
     if (result.cancelled) {
       setStatus('已取消保存')
@@ -42,11 +43,8 @@ async function captureConversation() {
 onMounted(async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true })
   activeTabId = tab?.id
-  try {
-    const host = tab?.url ? new URL(tab.url).hostname : ''
-    onChatGPT.value = host === 'chatgpt.com' || host === 'chat.openai.com'
-  } catch { onChatGPT.value = false }
-  if (!onChatGPT.value) setStatus('请先打开一个 ChatGPT 对话页面')
+  activeSite.value = findAiSite(tab?.url)
+  if (!activeSite.value) setStatus('请先打开一个支持的 AI 对话页面')
 })
 </script>
 
@@ -64,9 +62,9 @@ onMounted(async () => {
         <span class="action-arrow" aria-hidden="true">›</span>
       </button>
 
-      <button type="button" class="popup-action" :disabled="!onChatGPT || busy" @click="captureConversation">
+      <button type="button" class="popup-action" :disabled="!activeSite || busy" @click="captureConversation">
         <span class="action-icon chat" aria-hidden="true">↧</span>
-        <span><strong>收录对话</strong><small>选择位置保存当前 ChatGPT 对话</small></span>
+        <span><strong>收录对话</strong><small>{{ activeSite ? `选择位置保存当前 ${activeSite.name} 对话` : '支持主流 AI 对话网站' }}</small></span>
         <span class="action-arrow" aria-hidden="true">›</span>
       </button>
     </section>

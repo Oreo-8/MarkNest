@@ -43,11 +43,12 @@ pnpm release
 ## 使用
 
 - 点击扩展图标打开快捷悬浮窗，可选择“新建编辑页”或“收录对话”。
-- 在 ChatGPT 当前对话页选择“收录对话”，确认 Markdown 文件的保存位置后，扩展会完成保存并在 MarkNest 中打开。
+- 在支持的 AI 当前对话页选择“收录对话”，确认 Markdown 文件的保存位置后，扩展会完成保存并在 MarkNest 中打开。
+- 对话收录支持 ChatGPT、Gemini、DeepSeek、通义千问、Grok、豆包、Kimi 和智谱清言网页版。
 - 直接在浏览器打开 `.md` 或 `.markdown` 文件，在原始 `file://` 地址中阅读和编辑。
 - 支持目录与目录搜索、任务列表、表格、代码高亮和复制、图片大图预览、主题和字号设置、编辑器宽度调整、拖放打开与会话恢复。
 - `Ctrl/Command + S` 保存源文件，`Ctrl/Command + Shift + S` 另存为。
 
 所有 Markdown 内容均在浏览器本地处理，不会上传到网络。
 
-“收录对话”仅在用户主动点击后读取当前 ChatGPT 标签页，并使用 `activeTab`、`scripting` 和 `downloads` 权限完成本地转换与保存。
+“收录对话”仅在用户主动点击后读取当前受支持的 AI 对话标签页，并使用 `activeTab`、`scripting` 和 `downloads` 权限完成本地转换与保存。

@@ -11,7 +11,7 @@ function extensionEntries() {
       await Promise.all([
         build({ entryPoints: ['src/background.ts'], outfile: 'dist/background.js', bundle: true, format: 'iife', platform: 'browser', target: 'chrome109' }),
         build({ entryPoints: ['src/file-viewer-bootstrap.ts'], outfile: 'dist/file-viewer.js', bundle: true, format: 'iife', platform: 'browser', target: 'chrome109' }),
-        build({ entryPoints: ['src/chatgpt-capture.ts'], outfile: 'dist/chatgpt-capture.js', bundle: true, format: 'iife', platform: 'browser', target: 'chrome109' }),
+        build({ entryPoints: ['src/ai-capture.ts'], outfile: 'dist/ai-capture.js', bundle: true, format: 'iife', platform: 'browser', target: 'chrome109' }),
       ])
     },
   }

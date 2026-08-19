@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-marknest-site="chatgpt">
 <head><meta charset="UTF-8"><title>组件化方案 - ChatGPT</title></head>
 <body>
   <main>
@@ -19,9 +19,9 @@
   <script>
     window.chrome = { runtime: { onMessage: { addListener(handler) { window.captureHandler = handler } } } }
   </script>
-  <script src="/dist/chatgpt-capture.js"></script>
+  <script src="/dist/ai-capture.js"></script>
   <script>
-    window.captureHandler({ type: 'CAPTURE_CHATGPT_PAGE' }, {}, function (result) {
+    window.captureHandler({ type: 'CAPTURE_AI_PAGE' }, {}, function (result) {
       const output = document.createElement('pre')
       output.id = 'capture-result'
       output.textContent = JSON.stringify(result)

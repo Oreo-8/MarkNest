@@ -10,7 +10,7 @@
   <script>
     window.close = function () { document.body.dataset.closed = '1' }
     window.chrome = {
-      tabs: { query: async function () { return [{ url: 'https://chatgpt.com/c/test' }] } },
+      tabs: { query: async function () { return [{ url: 'https://gemini.google.com/app/test' }] } },
       runtime: {
         getURL: function (path) { return '/dist/' + path },
         sendMessage: async function (message) {

@@ -1,3 +1,5 @@
+import { findAiSite } from './ai-sites'
+
 async function hasFileAccess() {
   return chrome.extension.isAllowedFileSchemeAccess()
 }
@@ -23,16 +25,8 @@ async function createFreshEditor() {
   await chrome.tabs.create({ url: `${chrome.runtime.getURL('editor.html')}?session=${session}&fresh=1` })
 }
 
-function isChatGptUrl(url?: string) {
-  if (!url) return false
-  try {
-    const host = new URL(url).hostname
-    return host === 'chatgpt.com' || host === 'chat.openai.com'
-  } catch { return false }
-}
-
 function safeMarkdownName(title: string) {
-  const safeTitle = title.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80) || 'ChatGPT-对话'
+  const safeTitle = title.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80) || 'AI-对话'
   return `${safeTitle}.md`
 }
 
@@ -50,10 +44,11 @@ async function captureActiveConversation(requestedTabId?: number) {
   const tab = requestedTabId == null
     ? (await chrome.tabs.query({ active: true, lastFocusedWindow: true }))[0]
     : await chrome.tabs.get(requestedTabId)
-  if (tab?.id == null || !isChatGptUrl(tab.url)) throw new Error('请先打开一个 ChatGPT 对话页面')
+  const site = findAiSite(tab?.url)
+  if (tab?.id == null || !site) throw new Error('请先打开一个支持的 AI 对话页面')
 
   try {
-    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['chatgpt-capture.js'] })
+    await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['ai-capture.js'] })
   } catch (error) {
     throw new Error(`无法读取当前页面：${errorMessage(error)}`)
   }
@@ -61,10 +56,10 @@ async function captureActiveConversation(requestedTabId?: number) {
   let result: {
     ok?: boolean
     error?: string
-    conversation?: { title: string; content: string; sourceUrl: string }
+    conversation?: { title: string; content: string; sourceUrl: string; siteId: string; siteName: string }
   }
   try {
-    result = await chrome.tabs.sendMessage(tab.id, { type: 'CAPTURE_CHATGPT_PAGE' })
+    result = await chrome.tabs.sendMessage(tab.id, { type: 'CAPTURE_AI_PAGE' })
   } catch (error) {
     throw new Error(`采集脚本未响应：${errorMessage(error)}`)
   }
@@ -87,6 +82,8 @@ async function captureActiveConversation(requestedTabId?: number) {
         name: fileName,
         content: result.conversation.content,
         sourceUrl: result.conversation.sourceUrl,
+        siteId: result.conversation.siteId,
+        siteName: result.conversation.siteName,
         unsaved: false,
         updatedAt: Date.now(),
       },
@@ -120,7 +117,7 @@ chrome.runtime.onMessage.addListener((message: unknown, sender, sendResponse) =>
     return true
   }
 
-  if (payload.type === 'CAPTURE_CHATGPT') {
+  if (payload.type === 'CAPTURE_AI_CONVERSATION' || payload.type === 'CAPTURE_CHATGPT') {
     void captureActiveConversation(payload.tabId).then(({ cancelled }) => sendResponse({ ok: true, cancelled })).catch((error) => {
       sendResponse({ ok: false, error: errorMessage(error) })
     })

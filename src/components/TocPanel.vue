@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
+import searchIcon from '../assets/icons/search.svg'
 import type { HeadingItem } from '../types'
+import BaseIcon from './BaseIcon.vue'
 import BaseIconButton from './BaseIconButton.vue'
 
 const props = defineProps<{ headings: HeadingItem[]; activeHeadingId: string }>()
@@ -43,7 +45,7 @@ watch(() => props.activeHeadingId, (id) => {
       <div class="flex items-center gap-2.5 tabular-nums">
         <span>{{ countText }}</span>
         <BaseIconButton title="搜索目录" aria-label="搜索目录" @click="toggleSearch">
-          <svg viewBox="0 0 24 24"><path d="m20.5 19-4.2-4.2a7 7 0 1 0-1.5 1.5l4.2 4.2 1.5-1.5ZM5 10.5a5.5 5.5 0 1 1 11 0 5.5 5.5 0 0 1-11 0Z" /></svg>
+          <BaseIcon :src="searchIcon" />
         </BaseIconButton>
       </div>
     </div>

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+import saveAsIcon from '../assets/icons/save-as.svg'
+import saveIcon from '../assets/icons/save.svg'
+import toolbarCollapseIcon from '../assets/icons/toolbar-collapse.svg'
+import toolbarExpandIcon from '../assets/icons/toolbar-expand.svg'
+import BaseIcon from './BaseIcon.vue'
 import BaseIconButton from './BaseIconButton.vue'
 
 defineProps<{
@@ -48,11 +53,10 @@ function alignDropdown(event: PointerEvent) {
         :aria-expanded="expanded"
         @click="emit('update:expanded', !expanded)"
       >
-        <svg v-if="expanded" viewBox="0 0 24 24"><path d="M5 5h14v2H5V5Zm0 5h14v2H5v-2Zm7 4 5 5H7l5-5Z" /></svg>
-        <svg v-else viewBox="0 0 24 24"><path d="M5 5h14v2H5V5Zm0 5h14v2H5v-2Zm-5 2 5-5H7l5 5Z" /></svg>
+        <BaseIcon :src="expanded ? toolbarCollapseIcon : toolbarExpandIcon" />
       </BaseIconButton>
-      <BaseIconButton title="保存源文件（首次需要选择授权）" aria-label="保存源文件" @click="emit('save')"><svg viewBox="0 0 24 24"><path d="M5 3h12l3 3v15H4V3h1Zm1 2v14h12V7.2L15.8 5H15v5H7V5H6Zm3 0v3h4V5H9Zm-1 8h8v4H8v-4Z" /></svg></BaseIconButton>
-      <BaseIconButton title="另存为" aria-label="另存为" @click="emit('save-as')"><svg viewBox="0 0 24 24"><path d="M6 2h8l5 5v5h-2V8h-4V4H6v16h6v2H4V2h2Zm9 12h2v3h3v2h-3v3h-2v-3h-3v-2h3v-3Z" /></svg></BaseIconButton>
+      <BaseIconButton title="保存源文件（首次需要选择授权）" aria-label="保存源文件" @click="emit('save')"><BaseIcon :src="saveIcon" /></BaseIconButton>
+      <BaseIconButton title="另存为" aria-label="另存为" @click="emit('save-as')"><BaseIcon :src="saveAsIcon" /></BaseIconButton>
     </div>
   </div>
 

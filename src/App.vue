@@ -277,7 +277,7 @@ async function initialize() {
     const captured = stored[storageKey] as { name?: string; content?: string; sourceUrl?: string } | undefined
     if (captured?.content) {
       content.value = captured.content
-      fileName.value = captured.name || 'ChatGPT-对话.md'
+      fileName.value = captured.name || 'AI-对话.md'
       sourceUrl.value = captured.sourceUrl || null
       unsaved.value = false
       await chrome.storage.local.remove(storageKey)

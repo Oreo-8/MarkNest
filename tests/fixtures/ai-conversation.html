@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多站点收录回归</title>
+</head>
+<body>
+  <main>
+    <h1 id="conversation-title"></h1>
+    <article id="user-message">
+      <p>请用代码输出当前平台名称。</p>
+      <button>复制</button>
+    </article>
+    <article id="assistant-message">
+      <p id="answer"></p>
+      <pre><code class="language-ts">const supported = true</code></pre>
+      <button data-testid="copy-button">复制</button>
+    </article>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search)
+    const site = params.get('site') || 'chatgpt'
+    const names = {
+      chatgpt: 'ChatGPT', gemini: 'Gemini', deepseek: 'DeepSeek', qianwen: '通义千问',
+      grok: 'Grok', doubao: '豆包', kimi: 'Kimi', chatglm: '智谱清言'
+    }
+    document.documentElement.dataset.marknestSite = site
+    document.querySelector('#conversation-title').textContent = `${names[site]} 回归对话`
+    document.querySelector('#answer').textContent = `当前平台是 ${names[site]}。`
+    const user = document.querySelector('#user-message')
+    const assistant = document.querySelector('#assistant-message')
+    const marker = {
+      chatgpt: () => {
+        user.dataset.messageAuthorRole = 'user'
+        assistant.dataset.messageAuthorRole = 'assistant'
+      },
+      gemini: () => {
+        user.className = 'user-query-bubble-with-background'
+        user.querySelector('p').className = 'query-text'
+        assistant.className = 'model-response-text'
+      },
+      deepseek: () => {
+        user.dataset.messageRole = 'user'
+        assistant.dataset.messageRole = 'assistant'
+      },
+      qianwen: () => {
+        user.className = 'message-user'
+        assistant.className = 'message-assistant'
+      },
+      grok: () => {
+        user.dataset.testid = 'user-message'
+        assistant.dataset.testid = 'assistant-message'
+      },
+      doubao: () => {
+        user.dataset.testid = 'message_user'
+        assistant.dataset.testid = 'message_assistant'
+      },
+      kimi: () => {
+        user.className = 'segment-user'
+        assistant.className = 'segment-assistant'
+      },
+      chatglm: () => {
+        user.className = 'question-content'
+        assistant.className = 'answer-content'
+      },
+    }
+    marker[site]()
+    window.chrome = { runtime: { onMessage: { addListener(handler) { window.captureHandler = handler } } } }
+  </script>
+  <script src="/dist/ai-capture.js"></script>
+  <script>
+    window.captureHandler({ type: 'CAPTURE_AI_PAGE' }, {}, function (result) {
+      const output = document.createElement('pre')
+      output.id = 'capture-result'
+      output.textContent = JSON.stringify(result)
+      document.body.appendChild(output)
+    })
+  </script>
+</body>
+</html>
