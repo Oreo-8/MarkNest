@@ -1,6 +1,6 @@
-# MarkNest
+# MarkNest - 本地 Markdown 阅读与编辑器
 
-MarkNest 是一款使用 Vue 3、TypeScript、UnoCSS 与 Vite 构建的 Chrome / Edge Manifest V3 扩展，用于在浏览器中离线阅读、编辑和保存本地 Markdown 文件。
+MarkNest - 本地 Markdown 阅读与编辑器是一款使用 Vue 3、TypeScript、UnoCSS 与 Vite 构建的 Chrome / Edge Manifest V3 扩展，用于在浏览器中离线阅读、编辑和保存本地 Markdown 文件。
 
 ## 开发
 

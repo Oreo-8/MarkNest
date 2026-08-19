@@ -1,4 +1,4 @@
-# MarkNest 需求说明
+# MarkNest - 本地 Markdown 阅读与编辑器 需求说明
 
 ## 1. 项目概述
 
@@ -130,7 +130,7 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 
 ## 6. 图标与品牌
 
-- 产品英文名为 `MarkNest`。
+- 产品名为 `MarkNest - 本地 Markdown 阅读与编辑器`，简称为 `MarkNest`。
 - 图标采用近黑圆角底和蓝紫渐变文档/编辑符号。
 - 图标外部背景透明。
 - 扩展提供 16、32、48 和 128px PNG 图标。

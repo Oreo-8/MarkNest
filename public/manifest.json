@@ -1,8 +1,9 @@
 {
   "manifest_version": 3,
-  "name": "MarkNest",
-  "version": "2.2.0",
-  "description": "在浏览器中阅读、编辑和保存本地 Markdown 文件，并收录主流 AI 对话。",
+  "name": "MarkNest - 本地 Markdown 阅读与编辑器",
+  "short_name": "MarkNest",
+  "version": "2.3.0",
+  "description": "在浏览器中预览、编辑和保存本地 Markdown 文件，并一键收录 AI 对话。",
   "permissions": ["storage", "activeTab", "scripting", "downloads"],
   "host_permissions": [
     "file:///*",
