@@ -13,6 +13,7 @@ defineProps<{
   appearanceOpen: boolean
   fontSize: number
   contentCentered: boolean
+  contentSideMargin: number
   theme: 'dark' | 'light'
   editorExpanded: boolean
 }>()
@@ -22,6 +23,7 @@ const emit = defineEmits<{
   'update:appearanceOpen': [value: boolean]
   'update:fontSize': [value: number]
   'update:contentCentered': [value: boolean]
+  'update:contentSideMargin': [value: number]
   'update:theme': [value: 'dark' | 'light']
   'update:editorExpanded': [value: boolean]
 }>()
@@ -44,6 +46,19 @@ const emit = defineEmits<{
         <label class="appearance-field">
           <span>字体大小 <output>{{ fontSize }}px</output></span>
           <input :value="fontSize" type="range" min="12" max="22" step="1" @input="emit('update:fontSize', Number(($event.target as HTMLInputElement).value))">
+        </label>
+        <label class="appearance-field" :class="{ disabled: !contentCentered }">
+          <span>两侧留白 <output>{{ contentSideMargin }}px</output></span>
+          <input
+            :value="contentSideMargin"
+            :disabled="!contentCentered"
+            type="range"
+            min="32"
+            max="320"
+            step="8"
+            @input="emit('update:contentSideMargin', Number(($event.target as HTMLInputElement).value))"
+          >
+          <small v-if="!contentCentered">开启内容居中后可调整</small>
         </label>
       </div>
       <BaseIconButton :selected="contentCentered" :title="contentCentered ? '取消内容居中' : '内容居中'" :aria-label="contentCentered ? '取消内容居中' : '内容居中'" :aria-pressed="contentCentered" @click="emit('update:contentCentered', !contentCentered)">

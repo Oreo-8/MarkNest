@@ -22,6 +22,7 @@ export interface UserSettings {
   theme: 'dark' | 'light'
   fontSize: number
   contentCentered: boolean
+  contentSideMargin: number
   editorWidth: number | null
 }
 

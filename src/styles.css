@@ -50,6 +50,9 @@ button, textarea, input { font: inherit; }
 .appearance-field > span { display: flex; align-items: center; justify-content: space-between; }
 .appearance-field output { color: var(--ink); font-variant-numeric: tabular-nums; }
 .appearance-field input { width: 100%; accent-color: var(--accent); cursor: pointer; }
+.appearance-field small { color: var(--muted); font-size: 11px; }
+.appearance-field.disabled { opacity: .55; }
+.appearance-field input:disabled { cursor: not-allowed; }
 
 .toc { height: calc(100% - 48px); padding: 12px 10px 30px; overflow: auto; font-size: 13px; scroll-behavior: smooth; }
 .toc-panel.searching .toc { height: calc(100% - 94px); }
@@ -74,7 +77,10 @@ button, textarea, input { font: inherit; }
   padding: 34px clamp(24px, 4vw, 64px) 100px; overflow: auto; color: var(--ink);
   font-size: var(--preview-font-size, 15px); line-height: 1.75; scroll-behavior: smooth;
 }
-.content-centered .markdown-body { padding-right: max(24px, calc((100% - 860px) / 2)); padding-left: max(24px, calc((100% - 860px) / 2)); }
+.content-centered .markdown-body {
+  padding-right: min(var(--content-side-margin, 120px), max(24px, calc((100% - 320px) / 2)));
+  padding-left: min(var(--content-side-margin, 120px), max(24px, calc((100% - 320px) / 2)));
+}
 .markdown-body > :first-child { margin-top: 0; }
 .markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 { margin: 1.8em 0 .7em; color: var(--ink); line-height: 1.25; scroll-margin-top: 20px; }
 .markdown-body h1 { padding-bottom: .35em; border-bottom: 1px solid var(--line); font-size: 2em; }

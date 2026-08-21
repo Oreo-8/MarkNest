@@ -11,10 +11,11 @@ export function useSettings() {
   const theme = ref<'dark' | 'light'>('dark')
   const fontSize = ref(15)
   const contentCentered = ref(false)
+  const contentSideMargin = ref(120)
   const editorWidth = ref<number | null>(null)
 
   async function load() {
-    const defaults: UserSettings = { theme: 'dark', fontSize: 15, contentCentered: false, editorWidth: null }
+    const defaults: UserSettings = { theme: 'dark', fontSize: 15, contentCentered: false, contentSideMargin: 120, editorWidth: null }
     const stored = await chromeGet<Partial<UserSettings>>('userSettings')
     let local: Partial<UserSettings> = {}
     try { local = JSON.parse(localStorage.getItem('userSettings') || '{}') as Partial<UserSettings> } catch { /* ignore */ }
@@ -22,6 +23,7 @@ export function useSettings() {
     theme.value = settings.theme === 'light' ? 'light' : 'dark'
     fontSize.value = Math.min(22, Math.max(12, Number(settings.fontSize) || 15))
     contentCentered.value = Boolean(settings.contentCentered)
+    contentSideMargin.value = Math.min(320, Math.max(32, Number(settings.contentSideMargin) || 120))
     editorWidth.value = settings.editorWidth && settings.editorWidth >= 280 ? settings.editorWidth : null
   }
 
@@ -30,11 +32,12 @@ export function useSettings() {
       theme: theme.value,
       fontSize: fontSize.value,
       contentCentered: contentCentered.value,
+      contentSideMargin: contentSideMargin.value,
       editorWidth: editorWidth.value,
     }
     try { localStorage.setItem('userSettings', JSON.stringify(settings)) } catch { /* ignore */ }
     void globalThis.chrome?.storage?.local?.set({ userSettings: settings })
   }
 
-  return { theme, fontSize, contentCentered, editorWidth, load, persist }
+  return { theme, fontSize, contentCentered, contentSideMargin, editorWidth, load, persist }
 }
