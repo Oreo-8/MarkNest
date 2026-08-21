@@ -1,3 +1,54 @@
+<template>
+  <main class="app-shell" :class="bodyClasses" @click="appearanceOpen = false">
+    <section ref="workspace" class="workspace" :style="workspaceStyle" @dragenter="onDragEnter" @dragover.prevent @dragleave="onDragLeave" @drop="onDrop">
+      <TocPanel :headings="rendered.headings" :active-heading-id="activeHeadingId" @select="markdownPreview?.goToHeading($event)" />
+
+      <section class="preview-panel">
+        <PreviewToolbar
+          v-model:toc-visible="tocVisible"
+          v-model:appearance-open="appearanceOpen"
+          v-model:font-size="fontSize"
+          v-model:content-centered="contentCentered"
+          v-model:content-side-margin="contentSideMargin"
+          v-model:theme="theme"
+          v-model:editor-expanded="editorExpanded"
+          :status-text="statusText"
+        />
+        <MarkdownPreview
+          ref="markdownPreview"
+          :html="rendered.html"
+          :font-size="fontSize"
+          :theme="theme"
+          @active-change="activeHeadingId = $event"
+          @image="lightbox = $event"
+          @local-link="openLocalLink"
+          @toast="showToast"
+        />
+      </section>
+
+      <div class="resizer" title="拖动调整预览与编辑宽度；双击恢复默认比例" @pointerdown="startResize" @dblclick="resetEditorWidth"></div>
+      <EditorPanel v-model="content" @changed="onContentChanged" @scroll-progress="markdownPreview?.syncToProgress($event)" @save="save" @save-as="saveAs" />
+
+      <div v-if="dropVisible" class="drop-overlay"><div><strong>松开即可打开</strong><span>支持 .md 和 .markdown 文件</span></div></div>
+    </section>
+    <footer>
+      <button v-if="fileAccessAllowed === false" type="button" class="file-access-link" @click="showFileAccessNotice = true">{{ fileAccessStatus }}</button>
+      <span v-else>{{ fileAccessStatus }}</span>
+      <span v-if="editorExpanded"><kbd>Ctrl/⌘ S</kbd> 保存　<kbd>Ctrl/⌘ Shift S</kbd> 另存为</span>
+    </footer>
+    <FileAccessNotice
+      v-if="showFileAccessNotice"
+      :checking="checkingFileAccess"
+      @dismiss="showFileAccessNotice = false"
+      @recheck="recheckFileAccess"
+      @open-settings="openExtensionSettings"
+    />
+  </main>
+
+  <ToastMessage v-if="toastMessage" :message="toastMessage" />
+  <ImageLightbox v-if="lightbox" :image="lightbox" @close="lightbox = null" />
+</template>
+
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import EditorPanel from './components/EditorPanel.vue'
@@ -112,54 +163,3 @@ onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', persistence.persistSession)
 })
 </script>
-
-<template>
-  <main class="app-shell" :class="bodyClasses" @click="appearanceOpen = false">
-    <section ref="workspace" class="workspace" :style="workspaceStyle" @dragenter="onDragEnter" @dragover.prevent @dragleave="onDragLeave" @drop="onDrop">
-      <TocPanel :headings="rendered.headings" :active-heading-id="activeHeadingId" @select="markdownPreview?.goToHeading($event)" />
-
-      <section class="preview-panel">
-        <PreviewToolbar
-          v-model:toc-visible="tocVisible"
-          v-model:appearance-open="appearanceOpen"
-          v-model:font-size="fontSize"
-          v-model:content-centered="contentCentered"
-          v-model:content-side-margin="contentSideMargin"
-          v-model:theme="theme"
-          v-model:editor-expanded="editorExpanded"
-          :status-text="statusText"
-        />
-        <MarkdownPreview
-          ref="markdownPreview"
-          :html="rendered.html"
-          :font-size="fontSize"
-          :theme="theme"
-          @active-change="activeHeadingId = $event"
-          @image="lightbox = $event"
-          @local-link="openLocalLink"
-          @toast="showToast"
-        />
-      </section>
-
-      <div class="resizer" title="拖动调整预览与编辑宽度；双击恢复默认比例" @pointerdown="startResize" @dblclick="resetEditorWidth"></div>
-      <EditorPanel v-model="content" @changed="onContentChanged" @scroll-progress="markdownPreview?.syncToProgress($event)" @save="save" @save-as="saveAs" />
-
-      <div v-if="dropVisible" class="drop-overlay"><div><strong>松开即可打开</strong><span>支持 .md 和 .markdown 文件</span></div></div>
-    </section>
-    <footer>
-      <button v-if="fileAccessAllowed === false" type="button" class="file-access-link" @click="showFileAccessNotice = true">{{ fileAccessStatus }}</button>
-      <span v-else>{{ fileAccessStatus }}</span>
-      <span v-if="editorExpanded"><kbd>Ctrl/⌘ S</kbd> 保存　<kbd>Ctrl/⌘ Shift S</kbd> 另存为</span>
-    </footer>
-    <FileAccessNotice
-      v-if="showFileAccessNotice"
-      :checking="checkingFileAccess"
-      @dismiss="showFileAccessNotice = false"
-      @recheck="recheckFileAccess"
-      @open-settings="openExtensionSettings"
-    />
-  </main>
-
-  <ToastMessage v-if="toastMessage" :message="toastMessage" />
-  <ImageLightbox v-if="lightbox" :image="lightbox" @close="lightbox = null" />
-</template>

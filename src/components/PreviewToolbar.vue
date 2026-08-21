@@ -1,34 +1,3 @@
-<script setup lang="ts">
-import alignCenterIcon from '../assets/icons/align-center.svg'
-import editIcon from '../assets/icons/edit.svg'
-import paletteIcon from '../assets/icons/palette.svg'
-import themeIcon from '../assets/icons/theme.svg'
-import tocIcon from '../assets/icons/toc.svg'
-import BaseIcon from './BaseIcon.vue'
-import BaseIconButton from './BaseIconButton.vue'
-
-defineProps<{
-  statusText: string
-  tocVisible: boolean
-  appearanceOpen: boolean
-  fontSize: number
-  contentCentered: boolean
-  contentSideMargin: number
-  theme: 'dark' | 'light'
-  editorExpanded: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:tocVisible': [value: boolean]
-  'update:appearanceOpen': [value: boolean]
-  'update:fontSize': [value: number]
-  'update:contentCentered': [value: boolean]
-  'update:contentSideMargin': [value: number]
-  'update:theme': [value: 'dark' | 'light']
-  'update:editorExpanded': [value: boolean]
-}>()
-</script>
-
 <template>
   <div class="panel-title px-2.5">
     <div class="min-w-0 flex flex-1 items-center gap-2">
@@ -73,3 +42,34 @@ const emit = defineEmits<{
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import alignCenterIcon from '../assets/icons/align-center.svg'
+import editIcon from '../assets/icons/edit.svg'
+import paletteIcon from '../assets/icons/palette.svg'
+import themeIcon from '../assets/icons/theme.svg'
+import tocIcon from '../assets/icons/toc.svg'
+import BaseIcon from './BaseIcon.vue'
+import BaseIconButton from './BaseIconButton.vue'
+
+defineProps<{
+  statusText: string
+  tocVisible: boolean
+  appearanceOpen: boolean
+  fontSize: number
+  contentCentered: boolean
+  contentSideMargin: number
+  theme: 'dark' | 'light'
+  editorExpanded: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:tocVisible': [value: boolean]
+  'update:appearanceOpen': [value: boolean]
+  'update:fontSize': [value: number]
+  'update:contentCentered': [value: boolean]
+  'update:contentSideMargin': [value: number]
+  'update:theme': [value: 'dark' | 'light']
+  'update:editorExpanded': [value: boolean]
+}>()
+</script>

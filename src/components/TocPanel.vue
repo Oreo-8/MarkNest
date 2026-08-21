@@ -1,3 +1,32 @@
+<template>
+  <aside class="toc-panel" :class="{ searching }">
+    <div class="panel-title">
+      <strong class="text-ink text-3.25">目录</strong>
+      <div class="flex items-center gap-2.5 tabular-nums">
+        <span>{{ countText }}</span>
+        <BaseIconButton title="搜索目录" aria-label="搜索目录" @click="toggleSearch">
+          <BaseIcon :src="searchIcon" />
+        </BaseIconButton>
+      </div>
+    </div>
+    <div class="toc-search">
+      <input ref="searchInput" v-model="query" type="search" placeholder="搜索目录…" @keydown.esc="closeSearch">
+    </div>
+    <nav ref="navigation" class="toc" aria-label="文档目录">
+      <button
+        v-for="heading in filteredHeadings"
+        :key="heading.id"
+        :class="[`level-${heading.level}`, { active: activeHeadingId === heading.id }]"
+        :data-target="heading.id"
+        :title="heading.text"
+        @click="emit('select', heading.id)"
+      >{{ heading.text }}</button>
+      <p v-if="!headings.length" class="empty-hint">文档标题会显示在这里</p>
+      <p v-else-if="!filteredHeadings.length" class="empty-hint">没有匹配的标题</p>
+    </nav>
+  </aside>
+</template>
+
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import searchIcon from '../assets/icons/search.svg'
@@ -37,32 +66,3 @@ watch(() => props.activeHeadingId, (id) => {
   void nextTick(() => navigation.value?.querySelector(`[data-target="${CSS.escape(id)}"]`)?.scrollIntoView({ block: 'nearest' }))
 })
 </script>
-
-<template>
-  <aside class="toc-panel" :class="{ searching }">
-    <div class="panel-title">
-      <strong class="text-ink text-3.25">目录</strong>
-      <div class="flex items-center gap-2.5 tabular-nums">
-        <span>{{ countText }}</span>
-        <BaseIconButton title="搜索目录" aria-label="搜索目录" @click="toggleSearch">
-          <BaseIcon :src="searchIcon" />
-        </BaseIconButton>
-      </div>
-    </div>
-    <div class="toc-search">
-      <input ref="searchInput" v-model="query" type="search" placeholder="搜索目录…" @keydown.esc="closeSearch">
-    </div>
-    <nav ref="navigation" class="toc" aria-label="文档目录">
-      <button
-        v-for="heading in filteredHeadings"
-        :key="heading.id"
-        :class="[`level-${heading.level}`, { active: activeHeadingId === heading.id }]"
-        :data-target="heading.id"
-        :title="heading.text"
-        @click="emit('select', heading.id)"
-      >{{ heading.text }}</button>
-      <p v-if="!headings.length" class="empty-hint">文档标题会显示在这里</p>
-      <p v-else-if="!filteredHeadings.length" class="empty-hint">没有匹配的标题</p>
-    </nav>
-  </aside>
-</template>

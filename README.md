@@ -22,6 +22,10 @@ pnpm dev
 - `public/manifest.json`：Manifest V3 配置。
 - `dist/`：生产构建产物，可直接作为已解压扩展加载。
 
+## 代码模块设计
+
+![MarkNest 代码模块设计图](docs/code-module-design.svg)
+
 ## 构建与安装
 
 ```bash

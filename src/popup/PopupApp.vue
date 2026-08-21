@@ -1,3 +1,29 @@
+<template>
+  <main class="popup-shell">
+    <header class="popup-header">
+      <img :src="iconUrl" alt="" width="32" height="32">
+      <div><strong>MarkNest</strong><span>本地 Markdown 工作台</span></div>
+    </header>
+
+    <section class="popup-actions">
+      <button type="button" class="popup-action" @click="newEditor">
+        <span class="action-icon" aria-hidden="true">＋</span>
+        <span><strong>新建编辑页</strong><small>打开一个空白 Markdown 页面</small></span>
+        <span class="action-arrow" aria-hidden="true">›</span>
+      </button>
+
+      <button type="button" class="popup-action" :disabled="!activeSite || busy" @click="captureConversation">
+        <span class="action-icon chat" aria-hidden="true">↧</span>
+        <span><strong>收录对话</strong><small>{{ activeSite ? `选择位置保存当前 ${activeSite.name} 对话` : '支持主流 AI 对话网站' }}</small></span>
+        <span class="action-arrow" aria-hidden="true">›</span>
+      </button>
+    </section>
+
+    <p v-if="status" class="popup-status" :class="statusKind" role="status">{{ status }}</p>
+    <footer>内容仅在本机处理</footer>
+  </main>
+</template>
+
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { findAiSite } from '../ai-sites'
@@ -47,29 +73,3 @@ onMounted(async () => {
   if (!activeSite.value) setStatus('请先打开一个支持的 AI 对话页面')
 })
 </script>
-
-<template>
-  <main class="popup-shell">
-    <header class="popup-header">
-      <img :src="iconUrl" alt="" width="32" height="32">
-      <div><strong>MarkNest</strong><span>本地 Markdown 工作台</span></div>
-    </header>
-
-    <section class="popup-actions">
-      <button type="button" class="popup-action" @click="newEditor">
-        <span class="action-icon" aria-hidden="true">＋</span>
-        <span><strong>新建编辑页</strong><small>打开一个空白 Markdown 页面</small></span>
-        <span class="action-arrow" aria-hidden="true">›</span>
-      </button>
-
-      <button type="button" class="popup-action" :disabled="!activeSite || busy" @click="captureConversation">
-        <span class="action-icon chat" aria-hidden="true">↧</span>
-        <span><strong>收录对话</strong><small>{{ activeSite ? `选择位置保存当前 ${activeSite.name} 对话` : '支持主流 AI 对话网站' }}</small></span>
-        <span class="action-arrow" aria-hidden="true">›</span>
-      </button>
-    </section>
-
-    <p v-if="status" class="popup-status" :class="statusKind" role="status">{{ status }}</p>
-    <footer>内容仅在本机处理</footer>
-  </main>
-</template>

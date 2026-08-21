@@ -1,3 +1,8 @@
+<template>
+  <article ref="element" class="markdown-body" :style="{ '--preview-font-size': `${fontSize}px` }" @scroll.passive="onScroll" @click="onClick" v-html="html || '<p class=empty-hint>预览内容会显示在这里</p>'"></article>
+  <button v-if="showBackToTop" class="back-to-top" title="返回顶部" aria-label="返回顶部" @click="scrollToTop">↑</button>
+</template>
+
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 
@@ -91,8 +96,3 @@ function scrollToTop() { element.value?.scrollTo({ top: 0, behavior: 'smooth' })
 
 defineExpose({ goToHeading, syncToProgress, updateScrollSpy })
 </script>
-
-<template>
-  <article ref="element" class="markdown-body" :style="{ '--preview-font-size': `${fontSize}px` }" @scroll.passive="onScroll" @click="onClick" v-html="html || '<p class=empty-hint>预览内容会显示在这里</p>'"></article>
-  <button v-if="showBackToTop" class="back-to-top" title="返回顶部" aria-label="返回顶部" @click="scrollToTop">↑</button>
-</template>

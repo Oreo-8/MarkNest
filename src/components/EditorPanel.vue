@@ -1,3 +1,35 @@
+<template>
+  <section class="editor-panel" :class="{ 'toolbar-collapsed': !toolbarExpanded }">
+    <EditorToolbar
+      v-model:expanded="toolbarExpanded"
+      :line-count="lineCount"
+      :character-count="modelValue.length"
+      :can-undo="canUndo"
+      :can-redo="canRedo"
+      @remember-selection="rememberSelection"
+      @save="emit('save')"
+      @save-as="emit('save-as')"
+      @heading="setHeading"
+      @wrap="wrapSelection($event.prefix, $event.suffix, $event.placeholder)"
+      @insert-block="insertBlock($event.before, $event.content, $event.after, $event.selectContent)"
+      @quote="toggleLinePrefix(/^>\s?/, '> ')"
+      @callout="insertCallout"
+      @list="applyList"
+      @link="insertLink"
+      @table="insertTable"
+      @clear="clearFormatting"
+      @undo="restoreHistory(historyIndex - 1)"
+      @redo="restoreHistory(historyIndex + 1)"
+    />
+
+    <textarea
+      ref="textarea" :value="modelValue" spellcheck="false" placeholder="# 从这里开始写 Markdown…"
+      @input="commitValue(($event.target as HTMLTextAreaElement).value, true); rememberSelection()"
+      @keydown="onKeydown" @keyup="rememberSelection" @click="rememberSelection" @select="rememberSelection" @scroll.passive="onScroll"
+    ></textarea>
+  </section>
+</template>
+
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue'
 import EditorToolbar from './EditorToolbar.vue'
@@ -219,35 +251,3 @@ function onScroll() {
 }
 
 </script>
-
-<template>
-  <section class="editor-panel" :class="{ 'toolbar-collapsed': !toolbarExpanded }">
-    <EditorToolbar
-      v-model:expanded="toolbarExpanded"
-      :line-count="lineCount"
-      :character-count="modelValue.length"
-      :can-undo="canUndo"
-      :can-redo="canRedo"
-      @remember-selection="rememberSelection"
-      @save="emit('save')"
-      @save-as="emit('save-as')"
-      @heading="setHeading"
-      @wrap="wrapSelection($event.prefix, $event.suffix, $event.placeholder)"
-      @insert-block="insertBlock($event.before, $event.content, $event.after, $event.selectContent)"
-      @quote="toggleLinePrefix(/^>\s?/, '> ')"
-      @callout="insertCallout"
-      @list="applyList"
-      @link="insertLink"
-      @table="insertTable"
-      @clear="clearFormatting"
-      @undo="restoreHistory(historyIndex - 1)"
-      @redo="restoreHistory(historyIndex + 1)"
-    />
-
-    <textarea
-      ref="textarea" :value="modelValue" spellcheck="false" placeholder="# 从这里开始写 Markdown…"
-      @input="commitValue(($event.target as HTMLTextAreaElement).value, true); rememberSelection()"
-      @keydown="onKeydown" @keyup="rememberSelection" @click="rememberSelection" @select="rememberSelection" @scroll.passive="onScroll"
-    ></textarea>
-  </section>
-</template>

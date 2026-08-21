@@ -1,48 +1,3 @@
-<script setup lang="ts">
-import saveAsIcon from '../assets/icons/save-as.svg'
-import saveIcon from '../assets/icons/save.svg'
-import toolbarCollapseIcon from '../assets/icons/toolbar-collapse.svg'
-import toolbarExpandIcon from '../assets/icons/toolbar-expand.svg'
-import BaseIcon from './BaseIcon.vue'
-import BaseIconButton from './BaseIconButton.vue'
-
-defineProps<{
-  lineCount: number
-  characterCount: number
-  expanded: boolean
-  canUndo: boolean
-  canRedo: boolean
-}>()
-
-const emit = defineEmits<{
-  'update:expanded': [value: boolean]
-  'remember-selection': []
-  save: []
-  'save-as': []
-  heading: [level: number]
-  wrap: [payload: { prefix: string; suffix: string; placeholder: string }]
-  'insert-block': [payload: { before: string; content: string; after?: string; selectContent?: boolean }]
-  quote: []
-  callout: [type: string]
-  list: [type: string]
-  link: [image: boolean]
-  table: []
-  clear: []
-  undo: []
-  redo: []
-}>()
-
-function alignDropdown(event: PointerEvent) {
-  const dropdown = (event.target as HTMLElement).closest<HTMLElement>('.format-dropdown')
-  const panel = dropdown?.closest<HTMLElement>('.editor-panel')
-  const menu = dropdown?.querySelector<HTMLElement>('.format-dropdown-menu')
-  if (!dropdown || !panel || !menu) return
-  const dropdownRect = dropdown.getBoundingClientRect()
-  const panelRect = panel.getBoundingClientRect()
-  dropdown.classList.toggle('align-right', dropdownRect.left + menu.offsetWidth > panelRect.right - 8)
-}
-</script>
-
 <template>
   <div class="panel-title">
     <div class="flex items-center gap-2.5 tabular-nums"><span>{{ lineCount }} 行</span><span>{{ characterCount }} 字符</span></div>
@@ -114,3 +69,48 @@ function alignDropdown(event: PointerEvent) {
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+import saveAsIcon from '../assets/icons/save-as.svg'
+import saveIcon from '../assets/icons/save.svg'
+import toolbarCollapseIcon from '../assets/icons/toolbar-collapse.svg'
+import toolbarExpandIcon from '../assets/icons/toolbar-expand.svg'
+import BaseIcon from './BaseIcon.vue'
+import BaseIconButton from './BaseIconButton.vue'
+
+defineProps<{
+  lineCount: number
+  characterCount: number
+  expanded: boolean
+  canUndo: boolean
+  canRedo: boolean
+}>()
+
+const emit = defineEmits<{
+  'update:expanded': [value: boolean]
+  'remember-selection': []
+  save: []
+  'save-as': []
+  heading: [level: number]
+  wrap: [payload: { prefix: string; suffix: string; placeholder: string }]
+  'insert-block': [payload: { before: string; content: string; after?: string; selectContent?: boolean }]
+  quote: []
+  callout: [type: string]
+  list: [type: string]
+  link: [image: boolean]
+  table: []
+  clear: []
+  undo: []
+  redo: []
+}>()
+
+function alignDropdown(event: PointerEvent) {
+  const dropdown = (event.target as HTMLElement).closest<HTMLElement>('.format-dropdown')
+  const panel = dropdown?.closest<HTMLElement>('.editor-panel')
+  const menu = dropdown?.querySelector<HTMLElement>('.format-dropdown-menu')
+  if (!dropdown || !panel || !menu) return
+  const dropdownRect = dropdown.getBoundingClientRect()
+  const panelRect = panel.getBoundingClientRect()
+  dropdown.classList.toggle('align-right', dropdownRect.left + menu.offsetWidth > panelRect.right - 8)
+}
+</script>

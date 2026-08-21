@@ -1,7 +1,3 @@
-<script setup lang="ts">
-defineProps<{ src: string }>()
-</script>
-
 <template>
   <span
     class="base-icon"
@@ -9,3 +5,7 @@ defineProps<{ src: string }>()
     aria-hidden="true"
   />
 </template>
+
+<script setup lang="ts">
+defineProps<{ src: string }>()
+</script>

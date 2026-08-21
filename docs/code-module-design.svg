@@ -1,0 +1,185 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="920" viewBox="0 0 1440 920" role="img" aria-labelledby="title desc">
+  <title id="title">MarkNest 代码模块设计图</title>
+  <desc id="desc">展示 MarkNest 的入口层、应用编排层、业务模块层、扩展协调层以及浏览器能力之间的关系。</desc>
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f8fbff"/>
+      <stop offset="1" stop-color="#f5f1ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#24324a" flood-opacity="0.12"/>
+    </filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#68758a"/>
+    </marker>
+    <style>
+      text { font-family: Inter, "PingFang SC", "Microsoft YaHei", sans-serif; fill: #1c2b41; }
+      .title { font-size: 30px; font-weight: 700; }
+      .subtitle { font-size: 14px; fill: #66758a; }
+      .group-title { font-size: 15px; font-weight: 700; letter-spacing: 1px; }
+      .node-title { font-size: 16px; font-weight: 700; }
+      .node-subtitle { font-size: 12px; fill: #66758a; }
+      .edge-label { font-size: 12px; fill: #56657a; }
+      .edge { fill: none; stroke: #68758a; stroke-width: 1.8; marker-end: url(#arrow); }
+      .edge-dashed { fill: none; stroke: #8a95a6; stroke-width: 1.6; stroke-dasharray: 7 6; marker-end: url(#arrow); }
+      .node { rx: 12; filter: url(#shadow); }
+    </style>
+  </defs>
+
+  <rect width="1440" height="920" fill="url(#background)"/>
+  <text x="60" y="58" class="title">MarkNest 代码模块设计图</text>
+  <text x="60" y="84" class="subtitle">Vue 3 + TypeScript + Chrome Extension Manifest V3 · 当前代码结构</text>
+
+  <!-- Entry layer -->
+  <rect x="45" y="112" width="1350" height="138" rx="18" fill="#ffffff" stroke="#c9d7ec"/>
+  <text x="68" y="139" class="group-title" fill="#376aa6">入口层</text>
+  <g>
+    <rect class="node" x="78" y="158" width="260" height="66" fill="#e8f1ff" stroke="#6d9bd2"/>
+    <text x="208" y="184" text-anchor="middle" class="node-title">扩展弹窗</text>
+    <text x="208" y="205" text-anchor="middle" class="node-subtitle">popup/PopupApp.vue</text>
+  </g>
+  <g>
+    <rect class="node" x="410" y="158" width="260" height="66" fill="#e8f1ff" stroke="#6d9bd2"/>
+    <text x="540" y="184" text-anchor="middle" class="node-title">独立编辑页</text>
+    <text x="540" y="205" text-anchor="middle" class="node-subtitle">main.ts</text>
+  </g>
+  <g>
+    <rect class="node" x="742" y="158" width="260" height="66" fill="#e8f1ff" stroke="#6d9bd2"/>
+    <text x="872" y="184" text-anchor="middle" class="node-title">本地文件接管</text>
+    <text x="872" y="205" text-anchor="middle" class="node-subtitle">file-viewer.ts</text>
+  </g>
+  <g>
+    <rect class="node" x="1074" y="158" width="260" height="66" fill="#e8f1ff" stroke="#6d9bd2"/>
+    <text x="1204" y="184" text-anchor="middle" class="node-title">AI 页面采集</text>
+    <text x="1204" y="205" text-anchor="middle" class="node-subtitle">ai-capture.ts</text>
+  </g>
+
+  <!-- App layer -->
+  <rect x="45" y="278" width="905" height="420" rx="18" fill="#ffffff" stroke="#c8dfd1"/>
+  <text x="68" y="307" class="group-title" fill="#31724c">编辑器应用</text>
+  <g>
+    <rect class="node" x="328" y="329" width="340" height="76" fill="#eaf8f0" stroke="#65ad7e"/>
+    <text x="498" y="358" text-anchor="middle" class="node-title">应用状态与流程编排</text>
+    <text x="498" y="381" text-anchor="middle" class="node-subtitle">App.vue</text>
+  </g>
+
+  <text x="79" y="446" class="group-title" fill="#56657a">展示组件</text>
+  <g>
+    <rect x="77" y="463" width="190" height="58" rx="10" fill="#f0faf4" stroke="#92c5a4"/>
+    <text x="172" y="497" text-anchor="middle" class="node-title">工具栏 / 目录</text>
+  </g>
+  <g>
+    <rect x="286" y="463" width="190" height="58" rx="10" fill="#f0faf4" stroke="#92c5a4"/>
+    <text x="381" y="497" text-anchor="middle" class="node-title">Markdown 预览</text>
+  </g>
+  <g>
+    <rect x="495" y="463" width="190" height="58" rx="10" fill="#f0faf4" stroke="#92c5a4"/>
+    <text x="590" y="497" text-anchor="middle" class="node-title">编辑器面板</text>
+  </g>
+  <g>
+    <rect x="704" y="463" width="190" height="58" rx="10" fill="#f0faf4" stroke="#92c5a4"/>
+    <text x="799" y="487" text-anchor="middle" class="node-title">辅助组件</text>
+    <text x="799" y="506" text-anchor="middle" class="node-subtitle">权限 / Toast / 图片</text>
+  </g>
+
+  <text x="79" y="563" class="group-title" fill="#8a650f">业务逻辑与状态</text>
+  <g>
+    <rect x="77" y="580" width="190" height="72" rx="10" fill="#fff5dc" stroke="#d5ad4c"/>
+    <text x="172" y="609" text-anchor="middle" class="node-title">文档管理</text>
+    <text x="172" y="631" text-anchor="middle" class="node-subtitle">useMarkdownDocument</text>
+  </g>
+  <g>
+    <rect x="286" y="580" width="190" height="72" rx="10" fill="#fff5dc" stroke="#d5ad4c"/>
+    <text x="381" y="609" text-anchor="middle" class="node-title">会话持久化</text>
+    <text x="381" y="631" text-anchor="middle" class="node-subtitle">useEditorPersistence</text>
+  </g>
+  <g>
+    <rect x="495" y="580" width="190" height="72" rx="10" fill="#fff5dc" stroke="#d5ad4c"/>
+    <text x="590" y="609" text-anchor="middle" class="node-title">设置 / 权限 / 布局</text>
+    <text x="590" y="631" text-anchor="middle" class="node-subtitle">useSettings 等 composables</text>
+  </g>
+  <g>
+    <rect x="704" y="580" width="190" height="72" rx="10" fill="#fff5dc" stroke="#d5ad4c"/>
+    <text x="799" y="609" text-anchor="middle" class="node-title">Markdown 渲染</text>
+    <text x="799" y="631" text-anchor="middle" class="node-subtitle">markdown.ts</text>
+  </g>
+
+  <!-- Extension layer -->
+  <rect x="985" y="278" width="410" height="420" rx="18" fill="#ffffff" stroke="#d8caec"/>
+  <text x="1008" y="307" class="group-title" fill="#68439a">扩展协调层</text>
+  <g>
+    <rect class="node" x="1021" y="329" width="338" height="76" fill="#f2eafe" stroke="#a07acc"/>
+    <text x="1190" y="358" text-anchor="middle" class="node-title">Service Worker</text>
+    <text x="1190" y="381" text-anchor="middle" class="node-subtitle">background.ts</text>
+  </g>
+  <g>
+    <rect x="1021" y="463" width="155" height="72" rx="10" fill="#f6f0fd" stroke="#b69bd5"/>
+    <text x="1098" y="492" text-anchor="middle" class="node-title">AI 站点适配</text>
+    <text x="1098" y="514" text-anchor="middle" class="node-subtitle">ai-sites.ts</text>
+  </g>
+  <g>
+    <rect x="1204" y="463" width="155" height="72" rx="10" fill="#f6f0fd" stroke="#b69bd5"/>
+    <text x="1281" y="492" text-anchor="middle" class="node-title">扩展声明</text>
+    <text x="1281" y="514" text-anchor="middle" class="node-subtitle">manifest.json</text>
+  </g>
+  <g>
+    <rect x="1021" y="580" width="338" height="72" rx="10" fill="#f6f0fd" stroke="#b69bd5"/>
+    <text x="1190" y="609" text-anchor="middle" class="node-title">消息路由与浏览器操作</text>
+    <text x="1190" y="631" text-anchor="middle" class="node-subtitle">新建·采集·权限·本地链接</text>
+  </g>
+
+  <!-- Browser layer -->
+  <rect x="45" y="730" width="1350" height="145" rx="18" fill="#ffffff" stroke="#d6dae2"/>
+  <text x="68" y="759" class="group-title" fill="#596579">浏览器与本地能力</text>
+  <g>
+    <rect x="78" y="781" width="278" height="66" rx="12" fill="#f5f6f8" stroke="#aeb6c2"/>
+    <text x="217" y="807" text-anchor="middle" class="node-title">Chrome Extension APIs</text>
+    <text x="217" y="829" text-anchor="middle" class="node-subtitle">Runtime / Tabs / Scripting / Downloads</text>
+  </g>
+  <g>
+    <rect x="407" y="781" width="278" height="66" rx="12" fill="#f5f6f8" stroke="#aeb6c2"/>
+    <text x="546" y="807" text-anchor="middle" class="node-title">本地存储</text>
+    <text x="546" y="829" text-anchor="middle" class="node-subtitle">chrome.storage / localStorage / IndexedDB</text>
+  </g>
+  <g>
+    <rect x="736" y="781" width="278" height="66" rx="12" fill="#f5f6f8" stroke="#aeb6c2"/>
+    <text x="875" y="807" text-anchor="middle" class="node-title">文件系统</text>
+    <text x="875" y="829" text-anchor="middle" class="node-subtitle">File System Access API / file://</text>
+  </g>
+  <g>
+    <rect x="1065" y="781" width="278" height="66" rx="12" fill="#f5f6f8" stroke="#aeb6c2"/>
+    <text x="1204" y="807" text-anchor="middle" class="node-title">受支持的 AI 网站</text>
+    <text x="1204" y="829" text-anchor="middle" class="node-subtitle">ChatGPT / Gemini / DeepSeek / 千问等</text>
+  </g>
+
+  <!-- Connections -->
+  <path class="edge" d="M540 224 L540 272 L498 272 L498 329"/>
+  <path class="edge" d="M872 224 L872 267 L620 267 L620 329"/>
+  <path class="edge" d="M208 224 L208 264 L1080 264 L1080 329"/>
+  <path class="edge" d="M1204 224 L1204 329"/>
+  <text x="1160" y="273" class="edge-label">采集结果</text>
+
+  <path class="edge" d="M498 405 L498 443 L172 443 L172 463"/>
+  <path class="edge" d="M498 405 L498 443 L381 443 L381 463"/>
+  <path class="edge" d="M498 405 L498 463"/>
+  <path class="edge" d="M498 405 L498 443 L799 443 L799 463"/>
+  <path class="edge" d="M498 405 L498 546 L172 546 L172 580"/>
+  <path class="edge" d="M498 405 L498 580"/>
+  <path class="edge" d="M590 521 L590 580"/>
+  <path class="edge" d="M381 521 L381 580"/>
+  <path class="edge" d="M172 652 L172 706 L546 706 L546 781"/>
+  <path class="edge" d="M381 652 L381 718 L546 718 L546 781"/>
+  <path class="edge" d="M172 652 L172 718 L875 718 L875 781"/>
+  <path class="edge" d="M799 580 L799 546 L381 546 L381 521"/>
+  <text x="640" y="539" class="edge-label">生成 HTML + 标题目录</text>
+
+  <path class="edge" d="M1190 405 L1190 445 L1098 445 L1098 463"/>
+  <path class="edge-dashed" d="M1281 463 L1281 423 L1248 423 L1248 405"/>
+  <path class="edge" d="M1190 535 L1190 580"/>
+  <path class="edge" d="M1190 652 L1190 704 L217 704 L217 781"/>
+  <path class="edge" d="M1190 652 L1190 718 L546 718 L546 781"/>
+  <path class="edge" d="M1204 224 L1204 255 L1375 255 L1375 752 L1204 752 L1204 781"/>
+  <text x="1288" y="744" class="edge-label">读取 DOM</text>
+
+  <text x="720" y="902" text-anchor="middle" class="subtitle">数据在浏览器本地处理·编辑器由 App.vue 统一编排·background.ts 协调扩展能力</text>
+</svg>

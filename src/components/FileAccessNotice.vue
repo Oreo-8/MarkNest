@@ -1,8 +1,3 @@
-<script setup lang="ts">
-defineProps<{ checking?: boolean }>()
-const emit = defineEmits<{ dismiss: []; recheck: []; 'open-settings': [] }>()
-</script>
-
 <template>
   <div class="permission-backdrop" role="dialog" aria-modal="true" aria-labelledby="fileAccessTitle">
     <section class="permission-dialog">
@@ -27,3 +22,8 @@ const emit = defineEmits<{ dismiss: []; recheck: []; 'open-settings': [] }>()
     </section>
   </div>
 </template>
+
+<script setup lang="ts">
+defineProps<{ checking?: boolean }>()
+const emit = defineEmits<{ dismiss: []; recheck: []; 'open-settings': [] }>()
+</script>
