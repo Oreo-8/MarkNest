@@ -27,12 +27,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { findAiSite } from '../ai-sites'
+import { sendMessage } from '../messaging'
 
 const activeSite = ref<ReturnType<typeof findAiSite>>()
 const busy = ref(false)
 const status = ref('')
 const statusKind = ref<'info' | 'error' | 'success'>('info')
-const iconUrl = chrome.runtime.getURL('icons/icon-32.png')
+const iconUrl = chrome.runtime.getURL('/icons/icon-32.png')
 let activeTabId: number | undefined
 
 function setStatus(message: string, kind: 'info' | 'error' | 'success' = 'info') {
@@ -41,7 +42,7 @@ function setStatus(message: string, kind: 'info' | 'error' | 'success' = 'info')
 }
 
 async function newEditor() {
-  await chrome.runtime.sendMessage({ type: 'OPEN_EDITOR' })
+  await sendMessage('openEditor')
   window.close()
 }
 
@@ -50,7 +51,7 @@ async function captureConversation() {
   busy.value = true
   setStatus('正在整理当前对话，随后请选择保存位置…')
   try {
-    const result = await chrome.runtime.sendMessage({ type: 'CAPTURE_AI_CONVERSATION', tabId: activeTabId }) as { ok?: boolean; cancelled?: boolean; error?: string }
+    const result = await sendMessage('captureAiConversation', { tabId: activeTabId })
     if (!result?.ok) throw new Error(result?.error || '对话收录失败')
     if (result.cancelled) {
       setStatus('已取消保存')

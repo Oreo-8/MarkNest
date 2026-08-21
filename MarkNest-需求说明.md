@@ -153,7 +153,7 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 - 所有功能在离线状态下可用，网络图片除外。
 - 界面在黑白主题下均需保证文字和控件对比度。
 - 功能按钮应提供可访问名称，支持键盘操作。
-- 使用 TypeScript 严格模式开发，并通过 Vite 生成可直接作为“已解压扩展”加载的 `dist/` 产物。
+- 使用 WXT + Vue 3 + TypeScript + Pinia + `@webext-core/messaging` 开发，并生成可直接作为“已解压扩展”加载的 `.output/chrome-mv3/` 产物。
 
 ## 9. 验收标准
 
@@ -167,8 +167,8 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 
 ## 10. 发布物
 
-- `src/`：Vue 3 + TypeScript 扩展源代码。
-- `public/`：Manifest、扩展图标等无需编译的静态资源。
-- `dist/`：可直接加载的扩展生产构建；`pnpm release` 同时生成 `dist/MarkNest.zip`。
+- `src/`：WXT + Vue 3 + TypeScript + Pinia 扩展源代码。
+- `public/`：扩展图标等无需编译的静态资源，Manifest 由 WXT 生成。
+- `.output/chrome-mv3/`：可直接加载的扩展生产构建；`pnpm release` 同时生成 `.output/marknest-2.3.0-chrome.zip`。
 - `assets/marknest-icon-1024.png`：发布主图标。
 - `MarkNest-需求说明.md`：项目需求与验收依据。

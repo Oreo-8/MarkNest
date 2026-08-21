@@ -1,4 +1,5 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { sendMessage } from '../messaging'
 
 type ShowToast = (message: string) => void
 
@@ -22,7 +23,7 @@ export function useFileAccess(showToast: ShowToast, initiallyRequired = false) {
         : '⚠ 请开启“允许访问文件网址”，否则无法打开本地 MD'
       if (hasAccess) noticeVisible.value = false
       else if (showWhenDenied) noticeVisible.value = true
-      void chrome.runtime.sendMessage({ type: 'REFRESH_FILE_ACCESS_BADGE' }).catch(() => undefined)
+      void sendMessage('refreshFileAccessBadge').catch(() => undefined)
       return hasAccess
     } finally {
       checking.value = false
@@ -34,7 +35,7 @@ export function useFileAccess(showToast: ShowToast, initiallyRequired = false) {
       showToast('请手动打开扩展管理页，并开启“允许访问文件网址”')
       return
     }
-    const result = await chrome.runtime.sendMessage({ type: 'OPEN_EXTENSION_SETTINGS' }) as { ok?: boolean; error?: string }
+    const result = await sendMessage('openExtensionSettings')
     if (result?.ok) return
 
     const settingsUrl = `chrome://extensions/?id=${chrome.runtime.id}`

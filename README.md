@@ -1,26 +1,28 @@
 # MarkNest - 本地 Markdown 阅读与编辑器
 
-MarkNest - 本地 Markdown 阅读与编辑器是一款使用 Vue 3、TypeScript、UnoCSS 与 Vite 构建的 Chrome / Edge Manifest V3 扩展，用于在浏览器中离线阅读、编辑和保存本地 Markdown 文件。
+MarkNest - 本地 Markdown 阅读与编辑器是一款基于 WXT、Vue 3、TypeScript、Pinia 与 `@webext-core/messaging` 构建的 Chrome / Edge Manifest V3 扩展，用于在浏览器中离线阅读、编辑和保存本地 Markdown 文件。
 
 ## 开发
 
-环境要求：Node.js 18.18+，推荐使用 pnpm。
+环境要求：Node.js 22+，推荐使用 pnpm。
 
 ```bash
+nvm use
 pnpm install
 pnpm dev
 ```
 
-项目采用“容器组件 + 展示组件 + composables”分层：
+项目采用“WXT 入口 + Pinia 状态 + Vue 组件/composables”分层：
 
 - `src/App.vue`：应用状态与业务流程编排。
+- `src/entrypoints/`：WXT 背景脚本、弹窗、编辑页、本地文件和 AI 对话 content script 入口。
 - `src/components/`：目录、预览、编辑器、权限引导、图片灯箱和 Toast 等组件。
 - `src/composables/`：会话持久化、文件句柄、用户设置和提示状态。
+- `src/stores/`：Pinia 共享状态，当前包含用户外观与编辑器布局设置。
+- `src/messaging.ts`：`@webext-core/messaging` 类型化跨上下文通信协议。
 - `src/markdown.ts`：Markdown、安全清洗与离线代码高亮。
-- `src/background.ts`：扩展工具栏和本地 Markdown 链接导航。
-- `src/file-viewer.ts`：在原始 `file://` 页面中接管本地 Markdown。
-- `public/manifest.json`：Manifest V3 配置。
-- `dist/`：生产构建产物，可直接作为已解压扩展加载。
+- `wxt.config.ts`：Manifest V3、权限、域名和 WXT 模块配置。
+- `.output/chrome-mv3/`：生产构建产物，可直接作为已解压扩展加载。
 
 ## 代码模块设计
 
@@ -32,7 +34,7 @@ pnpm dev
 pnpm build
 ```
 
-然后打开 `chrome://extensions/` 或 `edge://extensions/`，启用开发者模式，选择“加载已解压的扩展程序”，加载项目的 `dist/` 目录。要接管本地 Markdown，还需在扩展详情页开启“允许访问文件网址”。
+然后打开 `chrome://extensions/` 或 `edge://extensions/`，启用开发者模式，选择“加载已解压的扩展程序”，加载项目的 `.output/chrome-mv3/` 目录。要接管本地 Markdown，还需在扩展详情页开启“允许访问文件网址”。
 
 正式版会在未开启该权限时显示引导弹窗，并在工具栏图标上显示 `!` 徽标。开启权限并返回 MarkNest 后会自动重新检测。
 
@@ -42,7 +44,7 @@ pnpm build
 pnpm release
 ```
 
-压缩包输出为 `dist/MarkNest.zip`。
+压缩包输出为 `.output/marknest-2.3.0-chrome.zip`。
 
 ## 使用
 

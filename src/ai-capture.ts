@@ -1,23 +1,13 @@
 import TurndownService from 'turndown'
 import { AI_SITES, findAiSite, type AiSiteDefinition } from './ai-sites'
 
-interface CapturedConversation {
-  title: string
-  content: string
-  sourceUrl: string
-  siteId: string
-  siteName: string
-}
+import type { CapturedConversation } from './messaging'
 
 type MessageRole = 'user' | 'assistant' | 'system'
 
 interface MessageCandidate {
   element: HTMLElement
   role: MessageRole
-}
-
-declare global {
-  var __markNestAiCaptureReady: boolean | undefined
 }
 
 function createConverter() {
@@ -137,7 +127,7 @@ function siteForCurrentPage() {
   return undefined
 }
 
-function captureConversation(): CapturedConversation {
+export function captureConversation(): CapturedConversation {
   const site = siteForCurrentPage()
   if (!site) throw new Error('当前网站暂不支持 AI 对话收录')
   const converter = createConverter()
@@ -162,16 +152,4 @@ function captureConversation(): CapturedConversation {
     siteName: site.name,
     content: `# ${title}\n\n> 来源：[${site.name} 对话](${location.href})  \n> 收录时间：${exportedAt}\n\n---\n\n${sections.join('\n\n---\n\n')}\n`,
   }
-}
-
-if (!globalThis.__markNestAiCaptureReady) {
-  globalThis.__markNestAiCaptureReady = true
-  chrome.runtime.onMessage.addListener((message: unknown, _sender, sendResponse) => {
-    if (!message || typeof message !== 'object' || !('type' in message) || message.type !== 'CAPTURE_AI_PAGE') return
-    try {
-      sendResponse({ ok: true, conversation: captureConversation() })
-    } catch (error) {
-      sendResponse({ ok: false, error: error instanceof Error ? error.message : '对话读取失败' })
-    }
-  })
 }

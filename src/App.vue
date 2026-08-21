@@ -51,6 +51,7 @@
 
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import EditorPanel from './components/EditorPanel.vue'
 import FileAccessNotice from './components/FileAccessNotice.vue'
 import ImageLightbox from './components/ImageLightbox.vue'
@@ -61,9 +62,9 @@ import TocPanel from './components/TocPanel.vue'
 import { useEditorResize } from './composables/useEditorResize'
 import { useFileAccess } from './composables/useFileAccess'
 import { useMarkdownDocument } from './composables/useMarkdownDocument'
-import { useSettings } from './composables/useSettings'
 import { useToast } from './composables/useToast'
 import { createMarkdownRenderer } from './markdown'
+import { useSettingsStore } from './stores/settings'
 
 const params = new URLSearchParams(location.search)
 const initialFile = window.__markdownInitialFile ?? null
@@ -79,7 +80,9 @@ const lightbox = ref<{ src: string; alt: string } | null>(null)
 const markdownPreview = ref<InstanceType<typeof MarkdownPreview> | null>(null)
 
 const { message: toastMessage, show: showToast } = useToast()
-const { theme, fontSize, contentCentered, contentSideMargin, editorWidth, load: loadSettings, persist: persistSettings } = useSettings()
+const settings = useSettingsStore()
+const { theme, fontSize, contentCentered, contentSideMargin, editorWidth } = storeToRefs(settings)
+const { load: loadSettings, persist: persistSettings } = settings
 const {
   content, fileName, unsaved, dropVisible, persistence,
   changed, openLocalLink, save, saveAs,

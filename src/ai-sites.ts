@@ -163,6 +163,8 @@ export const AI_SITES: AiSiteDefinition[] = [
   },
 ]
 
+export const AI_MATCHES = AI_SITES.flatMap((site) => site.hosts.map((host) => `https://${host}/*`))
+
 export function findAiSite(url?: string): AiSiteDefinition | undefined {
   if (!url) return undefined
   try {

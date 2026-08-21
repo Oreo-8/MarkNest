@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import type { InitialLocalFile } from '../types'
+import { sendMessage } from '../messaging'
 import { useEditorPersistence } from './useEditorPersistence'
 
 type ShowToast = (message: string) => void
@@ -31,7 +32,7 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
     try {
       const url = new URL(href, sourceUrl.value)
       if (url.protocol !== 'file:' || !/\.(md|markdown)$/i.test(url.pathname)) return options.showToast('目前仅支持打开本地 Markdown 链接')
-      const result = await chrome.runtime.sendMessage({ type: 'OPEN_LOCAL_LINK', url: url.href }) as { ok?: boolean; error?: string }
+      const result = await sendMessage('openLocalLink', { url: url.href })
       if (!result?.ok) options.showToast(result?.error || '文档打开失败')
     } catch (error) {
       options.showToast(error instanceof Error ? error.message : '链接地址无效')
