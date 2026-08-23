@@ -18,6 +18,15 @@ export interface HeadingItem {
   id: string
 }
 
+export interface FileTreeNode {
+  name: string
+  kind: 'file' | 'directory'
+  url: string
+  children: FileTreeNode[] | null
+  expanded: boolean
+  loading: boolean
+}
+
 export interface UserSettings {
   theme: 'dark' | 'light'
   fontSize: number

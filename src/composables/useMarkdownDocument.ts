@@ -168,6 +168,9 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
         unsaved.value = false
         persistence.persistSession()
       }
+      // file:// 地址只能用来读取；恢复用户首次保存时授权的文件句柄，
+      // 使同一文件之后再打开时可以直接 Ctrl/⌘ S 覆盖保存。
+      await persistence.restoreSourceHandle()
     } else {
       await persistence.restoreSession()
       await persistence.restoreSourceHandle()

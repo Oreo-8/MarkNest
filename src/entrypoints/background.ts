@@ -1,5 +1,6 @@
 import { findAiSite } from '../ai-sites'
 import { onMessage, sendMessage } from '../messaging'
+import type { LocalDirectoryEntry } from '../messaging'
 
 function errorMessage(error: unknown) {
   if (error instanceof Error) return error.message
@@ -14,6 +15,65 @@ function isUserCancellation(error: unknown) {
 function safeMarkdownName(title: string) {
   const safeTitle = title.replace(/[\\/:*?"<>|]/g, '-').replace(/\s+/g, ' ').trim().slice(0, 80) || 'AI-对话'
   return `${safeTitle}.md`
+}
+
+function decodeHtmlAttribute(value: string) {
+  return value
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;|&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+}
+
+async function fetchLocalText(url: string) {
+  let lastError: unknown
+  for (let attempt = 1; attempt <= 3; attempt += 1) {
+    if (attempt > 1) await new Promise((resolve) => setTimeout(resolve, 300))
+    try {
+      const response = await fetch(url)
+      // file:// 响应不保证具有 HTTP 2xx 状态，只要能读取正文就是成功。
+      return await response.text()
+    } catch (error) {
+      lastError = error
+      console.warn(`[MarkNest] 第 ${attempt}/3 次读取本地目录失败：${url}`, error)
+    }
+  }
+  throw lastError
+}
+
+function localDirectoryEntries(html: string, directoryUrl: URL) {
+  const entries = new Map<string, LocalDirectoryEntry>()
+  const basePath = directoryUrl.pathname.endsWith('/') ? directoryUrl.pathname : `${directoryUrl.pathname}/`
+
+  function add(rawHref: string, directoryHint?: boolean) {
+    let target: URL
+    try { target = new URL(decodeHtmlAttribute(rawHref), directoryUrl) } catch { return }
+    if (target.protocol !== 'file:' || target.origin !== directoryUrl.origin || !target.pathname.startsWith(basePath)) return
+    const relativePath = target.pathname.slice(basePath.length)
+    const pathWithoutSlash = relativePath.replace(/\/$/, '')
+    if (!pathWithoutSlash || pathWithoutSlash.includes('/')) return
+    let name: string
+    try { name = decodeURIComponent(pathWithoutSlash) } catch { name = pathWithoutSlash }
+    const kind = (directoryHint ?? target.pathname.endsWith('/')) ? 'directory' : 'file'
+    if (kind === 'directory' && !target.pathname.endsWith('/')) target.pathname += '/'
+    target.search = ''
+    target.hash = ''
+    entries.set(target.href, { name, kind, url: target.href })
+  }
+
+  const addRowPattern = /addRow\(\s*("(?:\\.|[^"\\])*")\s*,\s*("(?:\\.|[^"\\])*")\s*,\s*(true|false|0|1)/g
+  for (const match of html.matchAll(addRowPattern)) {
+    try { add(JSON.parse(match[2]), match[3] === 'true' || match[3] === '1') } catch { /* 忽略无法解析的目录项 */ }
+  }
+
+  const hrefPattern = /href\s*=\s*(["'])(.*?)\1/gi
+  for (const match of html.matchAll(hrefPattern)) add(match[2])
+
+  return [...entries.values()].sort((left, right) => {
+    if (left.kind !== right.kind) return left.kind === 'directory' ? -1 : 1
+    return left.name.localeCompare(right.name, 'zh-CN', { numeric: true })
+  })
 }
 
 export default defineBackground(() => {
@@ -126,6 +186,20 @@ export default defineBackground(() => {
   onMessage('refreshFileAccessBadge', async () => {
     const allowed = await updateAccessBadge()
     return { ok: true, allowed }
+  })
+
+  onMessage('listLocalDirectory', async ({ data }) => {
+    try {
+      const directoryUrl = new URL(data.url)
+      if (directoryUrl.protocol !== 'file:') return { ok: false, error: '只能读取本地文件夹' }
+      if (!(await hasFileAccess())) return { ok: false, error: '请先开启扩展的“允许访问文件网址”' }
+      if (!directoryUrl.pathname.endsWith('/')) directoryUrl.pathname += '/'
+      const html = await fetchLocalText(directoryUrl.href)
+      if (!/(?:addRow|start)\s*\(|href\s*=/i.test(html)) return { ok: false, error: '浏览器未提供该文件夹的目录索引' }
+      return { ok: true, entries: localDirectoryEntries(html, directoryUrl) }
+    } catch (error) {
+      return { ok: false, error: `目录读取失败：${errorMessage(error)}` }
+    }
   })
 
   onMessage('openLocalLink', async ({ data, sender }) => {

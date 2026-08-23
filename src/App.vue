@@ -1,7 +1,15 @@
 <template>
   <main class="app-shell" :class="bodyClasses" @click="appearanceOpen = false">
     <section ref="workspace" class="workspace" :style="workspaceStyle" @dragenter="onDragEnter" @dragover.prevent @dragleave="onDragLeave" @drop="onDrop">
-      <TocPanel :headings="rendered.headings" :active-heading-id="activeHeadingId" @select="markdownPreview?.goToHeading($event)" />
+      <TocPanel
+        :headings="rendered.headings"
+        :active-heading-id="activeHeadingId"
+        :active-file-name="fileName"
+        :source-url="sourceUrl"
+        :show-toast="showToast"
+        @select="markdownPreview?.goToHeading($event)"
+        @open-file="openTreeFile"
+      />
 
       <section class="preview-panel">
         <PreviewToolbar
@@ -84,7 +92,7 @@ const settings = useSettingsStore()
 const { theme, fontSize, contentCentered, contentSideMargin, editorWidth } = storeToRefs(settings)
 const { load: loadSettings, persist: persistSettings } = settings
 const {
-  content, fileName, unsaved, dropVisible, persistence,
+  content, fileName, sourceUrl, unsaved, dropVisible, persistence,
   changed, openLocalLink, save, saveAs,
   onDragEnter, onDragLeave, onDrop, initialize: initializeDocument,
 } = useMarkdownDocument({
@@ -125,6 +133,12 @@ const bodyClasses = computed(() => ({
 function onContentChanged() {
   changed()
   void nextTick(() => markdownPreview.value?.updateScrollSpy())
+}
+
+async function openTreeFile(url: string) {
+  const name = (() => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url } })()
+  if (unsaved.value && !confirm(`当前文档 ${fileName.value} 有未保存修改，仍要打开 ${name} 吗？`)) return
+  await openLocalLink(url)
 }
 
 function onGlobalKeydown(event: KeyboardEvent) {

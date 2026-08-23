@@ -13,6 +13,12 @@ export interface ActionResult {
   error?: string
 }
 
+export interface LocalDirectoryEntry {
+  name: string
+  kind: 'file' | 'directory'
+  url: string
+}
+
 export interface CaptureResult extends ActionResult {
   cancelled?: boolean
   conversation?: CapturedConversation
@@ -25,6 +31,7 @@ interface MarkNestProtocol {
   openExtensionSettings(): ActionResult
   refreshFileAccessBadge(): ActionResult & { allowed?: boolean }
   openLocalLink(data: { url: string }): ActionResult
+  listLocalDirectory(data: { url: string }): ActionResult & { entries?: LocalDirectoryEntry[] }
 }
 
 export const { onMessage, sendMessage } = defineExtensionMessaging<MarkNestProtocol>()

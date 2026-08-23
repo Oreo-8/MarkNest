@@ -44,7 +44,7 @@ pnpm build
 pnpm release
 ```
 
-压缩包输出为 `.output/marknest-2.3.0-chrome.zip`。
+压缩包输出为 `.output/marknest-3.0.0-chrome.zip`。
 
 ## 使用
 

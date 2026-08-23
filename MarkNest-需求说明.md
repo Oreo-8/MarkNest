@@ -1,8 +1,8 @@
-# MarkNest - 本地 Markdown 阅读与编辑器 需求说明
+# MarkNest 需求说明
 
 ## 1. 项目概述
 
-MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与文件导航扩展。用户直接在浏览器中打开 `.md` 或 `.markdown` 文件时，扩展在原始 `file://` 地址页面内提供目录、预览、编辑、搜索、代码高亮、图片预览和保存能力，文件内容不上传到网络。
+MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与文件导航扩展。用户直接在浏览器中打开 .md 或 .markdown 文件时，扩展在原始 file:// 地址页面内提供目录、预览、编辑、搜索、代码高亮、图片预览和保存能力，文件内容不上传到网络。
 
 ## 2. 产品目标
 
@@ -111,10 +111,10 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 - 拖动文件进入页面时显示明确的接收提示。
 - 不支持的文件类型需要给出提示，不加载文件。
 
-### 4.12 AI 对话收录
+### 4.12 ChatGPT 对话收录
 
-- 插件悬浮窗提供“收录对话”功能，在 ChatGPT、Gemini、DeepSeek、通义千问、Grok、豆包、Kimi 和智谱清言对话页面可用。
-- 自动识别当前 AI 平台，读取用户与 AI 消息，并转换为带平台名称、来源链接和收录时间的结构化 Markdown。
+- 插件悬浮窗提供“收录对话”功能，仅在 ChatGPT 对话页面可用。
+- 读取当前对话中的用户与 ChatGPT 消息，并转换为结构化 Markdown。
 - 收录时弹出系统保存位置选择框，用户确认后保存 `.md` 文件，并在 MarkNest 阅读界面中打开。
 - 用户取消位置选择时，不保存文件，也不打开新阅读页。
 - 对话内容仅在本地浏览器内处理，不上传到第三方服务器。
@@ -130,7 +130,7 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 
 ## 6. 图标与品牌
 
-- 产品名为 `MarkNest - 本地 Markdown 阅读与编辑器`，简称为 `MarkNest`。
+- 产品英文名为 `MarkNest`。
 - 图标采用近黑圆角底和蓝紫渐变文档/编辑符号。
 - 图标外部背景透明。
 - 扩展提供 16、32、48 和 128px PNG 图标。
@@ -140,7 +140,7 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 
 - 扩展使用 Manifest V3。
 - 申请本地存储、本地文件接管、当前标签页脚本执行和 Markdown 下载所需权限。
-- AI 网站访问权限仅覆盖已支持平台的官方网页域名，只在用户主动点击“收录对话”时读取当前页面。
+- ChatGPT 页面访问范围仅限 `chatgpt.com` 与兼容旧地址 `chat.openai.com`，只在用户主动点击“收录对话”时读取当前页面。
 - Markdown 内容只在本地浏览器中处理，不上传服务器。
 - 外部链接使用安全的跳转属性。
 - 用户必须主动开启“允许访问文件网址”后，扩展才能接管本地文件。
@@ -153,7 +153,7 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 - 所有功能在离线状态下可用，网络图片除外。
 - 界面在黑白主题下均需保证文字和控件对比度。
 - 功能按钮应提供可访问名称，支持键盘操作。
-- 使用 WXT + Vue 3 + TypeScript + Pinia + `@webext-core/messaging` 开发，并生成可直接作为“已解压扩展”加载的 `.output/chrome-mv3/` 产物。
+- 使用 TypeScript 严格模式开发，并通过 Vite 生成可直接作为“已解压扩展”加载的 `dist/` 产物。
 
 ## 9. 验收标准
 
@@ -167,8 +167,8 @@ MarkNest 是一款面向 Chrome 和 Edge 的本地 Markdown 阅读、编辑与�
 
 ## 10. 发布物
 
-- `src/`：WXT + Vue 3 + TypeScript + Pinia 扩展源代码。
-- `public/`：扩展图标等无需编译的静态资源，Manifest 由 WXT 生成。
-- `.output/chrome-mv3/`：可直接加载的扩展生产构建；`pnpm release` 同时生成 `.output/marknest-2.3.0-chrome.zip`。
+- `src/`：Vue 3 + TypeScript 扩展源代码。
+- `public/`：Manifest、扩展图标等无需编译的静态资源。
+- `dist/`：可直接加载的扩展生产构建；`pnpm release` 同时生成 `dist/MarkNest.zip`。
 - `assets/marknest-icon-1024.png`：发布主图标。
 - `MarkNest-需求说明.md`：项目需求与验收依据。
