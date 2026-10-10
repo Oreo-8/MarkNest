@@ -1,11 +1,17 @@
 import { findAiSite } from '../ai-sites'
 import { onMessage, sendMessage } from '../messaging'
 import type { LocalDirectoryEntry } from '../messaging'
+import { setCurrentLanguage, t } from '../i18n'
+
+async function ensureLanguage() {
+  const stored = await chrome.storage.local.get('userSettings')
+  setCurrentLanguage(stored.userSettings?.language)
+}
 
 function errorMessage(error: unknown) {
   if (error instanceof Error) return error.message
   if (typeof error === 'string') return error
-  return '未知错误'
+  return t('unknownError')
 }
 
 function isUserCancellation(error: unknown) {
@@ -77,15 +83,20 @@ function localDirectoryEntries(html: string, directoryUrl: URL) {
 }
 
 export default defineBackground(() => {
+  void ensureLanguage()
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && changes.userSettings) setCurrentLanguage(changes.userSettings.newValue?.language)
+  })
   async function hasFileAccess() {
     return chrome.extension.isAllowedFileSchemeAccess()
   }
 
   async function updateAccessBadge() {
+    await ensureLanguage()
     const allowed = await hasFileAccess()
     await chrome.action.setBadgeBackgroundColor({ color: '#e05252' })
     await chrome.action.setBadgeText({ text: allowed ? '' : '!' })
-    await chrome.action.setTitle({ title: allowed ? '打开 MarkNest' : 'MarkNest：请开启“允许访问文件网址”' })
+    await chrome.action.setTitle({ title: allowed ? t('actionOpen') : t('actionPermission') })
     return allowed
   }
 
@@ -110,19 +121,20 @@ export default defineBackground(() => {
   }
 
   async function captureActiveConversation(requestedTabId?: number) {
+    await ensureLanguage()
     const tab = requestedTabId == null
       ? (await chrome.tabs.query({ active: true, lastFocusedWindow: true }))[0]
       : await chrome.tabs.get(requestedTabId)
     const site = findAiSite(tab?.url)
-    if (tab?.id == null || !site) throw new Error('请先打开一个支持的 AI 对话页面')
+    if (tab?.id == null || !site) throw new Error(t('unsupportedSite'))
 
     let result
     try {
       result = await requestConversation(tab.id)
     } catch (error) {
-      throw new Error(`无法读取当前页面：${errorMessage(error)}`)
+      throw new Error(t('readPageFailed', { error: errorMessage(error) }))
     }
-    if (!result?.ok || !result.conversation) throw new Error(result?.error || '对话读取失败')
+    if (!result?.ok || !result.conversation) throw new Error(result?.error || t('conversationReadFailed'))
 
     const fileName = safeMarkdownName(result.conversation.title)
     const dataUrl = `data:text/markdown;charset=utf-8,${encodeURIComponent(result.conversation.content)}`
@@ -130,7 +142,7 @@ export default defineBackground(() => {
       await chrome.downloads.download({ url: dataUrl, filename: fileName, saveAs: true })
     } catch (error) {
       if (isUserCancellation(error)) return { cancelled: true }
-      throw new Error(`Markdown 保存失败：${errorMessage(error)}`)
+      throw new Error(t('markdownSaveFailed', { error: errorMessage(error) }))
     }
 
     const captureId = crypto.randomUUID()
@@ -176,7 +188,10 @@ export default defineBackground(() => {
 
   onMessage('openExtensionSettings', async () => {
     try {
-      await chrome.tabs.create({ url: `chrome://extensions/?id=${chrome.runtime.id}` })
+      const url = import.meta.env.BROWSER === 'firefox'
+        ? 'about:addons'
+        : `chrome://extensions/?id=${chrome.runtime.id}`
+      await chrome.tabs.create({ url })
       return { ok: true }
     } catch (error) {
       return { ok: false, error: errorMessage(error) }
@@ -189,31 +204,33 @@ export default defineBackground(() => {
   })
 
   onMessage('listLocalDirectory', async ({ data }) => {
+    await ensureLanguage()
     try {
       const directoryUrl = new URL(data.url)
-      if (directoryUrl.protocol !== 'file:') return { ok: false, error: '只能读取本地文件夹' }
-      if (!(await hasFileAccess())) return { ok: false, error: '请先开启扩展的“允许访问文件网址”' }
+      if (directoryUrl.protocol !== 'file:') return { ok: false, error: t('localFolderOnly') }
+      if (!(await hasFileAccess())) return { ok: false, error: t('fileAccessFirst') }
       if (!directoryUrl.pathname.endsWith('/')) directoryUrl.pathname += '/'
       const html = await fetchLocalText(directoryUrl.href)
-      if (!/(?:addRow|start)\s*\(|href\s*=/i.test(html)) return { ok: false, error: '浏览器未提供该文件夹的目录索引' }
+      if (!/(?:addRow|start)\s*\(|href\s*=/i.test(html)) return { ok: false, error: t('noDirectoryIndex') }
       return { ok: true, entries: localDirectoryEntries(html, directoryUrl) }
     } catch (error) {
-      return { ok: false, error: `目录读取失败：${errorMessage(error)}` }
+      return { ok: false, error: t('directoryReadDetail', { error: errorMessage(error) }) }
     }
   })
 
   onMessage('openLocalLink', async ({ data, sender }) => {
+    await ensureLanguage()
     try {
       const target = new URL(data.url)
       if (target.protocol !== 'file:' || !/\.(md|markdown)$/i.test(target.pathname)) {
-        return { ok: false, error: '链接不是本地 Markdown 文件' }
+        return { ok: false, error: t('notLocalMarkdown') }
       }
       if (!(await hasFileAccess())) {
         await updateAccessBadge()
-        return { ok: false, error: '请先在扩展详情中开启“允许访问文件网址”' }
+        return { ok: false, error: t('fileAccessDetail') }
       }
       const tabId = sender.tab?.id ?? (await chrome.tabs.query({ active: true, lastFocusedWindow: true }))[0]?.id
-      if (tabId == null) return { ok: false, error: '无法定位当前浏览器标签页' }
+      if (tabId == null) return { ok: false, error: t('tabMissing') }
       await chrome.tabs.update(tabId, { url: target.href })
       return { ok: true }
     } catch (error) {

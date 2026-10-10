@@ -1,23 +1,23 @@
 <template>
   <div class="panel-title px-2.5">
     <div class="min-w-0 flex flex-1 items-center gap-2">
-      <BaseIconButton :title="tocVisible ? '收起目录' : '展开目录'" :aria-label="tocVisible ? '收起目录' : '展开目录'" :aria-pressed="tocVisible" @click="emit('update:tocVisible', !tocVisible)">
+      <BaseIconButton :title="tocVisible ? t('collapseToc') : t('expandToc')" :aria-label="tocVisible ? t('collapseToc') : t('expandToc')" :aria-pressed="tocVisible" @click="emit('update:tocVisible', !tocVisible)">
         <BaseIcon :src="tocIcon" />
       </BaseIconButton>
       <span class="file-status">{{ statusText }}</span>
     </div>
     <div class="preview-actions">
-      <BaseIconButton title="预览外观" aria-label="预览外观" :aria-expanded="appearanceOpen" @click.stop="emit('update:appearanceOpen', !appearanceOpen)">
+      <BaseIconButton :title="t('appearance')" :aria-label="t('appearance')" :aria-expanded="appearanceOpen" @click.stop="emit('update:appearanceOpen', !appearanceOpen)">
         <BaseIcon :src="paletteIcon" />
       </BaseIconButton>
       <div v-if="appearanceOpen" class="appearance-popover" @click.stop>
-        <div class="font-700 text-3.25">预览外观</div>
+        <div class="font-700 text-3.25">{{ t('appearance') }}</div>
         <label class="appearance-field">
-          <span>字体大小 <output>{{ fontSize }}px</output></span>
+          <span>{{ t('fontSize') }} <output>{{ fontSize }}px</output></span>
           <input :value="fontSize" type="range" min="12" max="22" step="1" @input="emit('update:fontSize', Number(($event.target as HTMLInputElement).value))">
         </label>
         <label class="appearance-field" :class="{ disabled: !contentCentered }">
-          <span>两侧留白 <output>{{ contentSideMargin }}px</output></span>
+          <span>{{ t('sideMargin') }} <output>{{ contentSideMargin }}px</output></span>
           <input
             :value="contentSideMargin"
             :disabled="!contentCentered"
@@ -27,16 +27,16 @@
             step="8"
             @input="emit('update:contentSideMargin', Number(($event.target as HTMLInputElement).value))"
           >
-          <small v-if="!contentCentered">开启内容居中后可调整</small>
+          <small v-if="!contentCentered">{{ t('centerFirst') }}</small>
         </label>
       </div>
-      <BaseIconButton :selected="contentCentered" :title="contentCentered ? '取消内容居中' : '内容居中'" :aria-label="contentCentered ? '取消内容居中' : '内容居中'" :aria-pressed="contentCentered" @click="emit('update:contentCentered', !contentCentered)">
+      <BaseIconButton :selected="contentCentered" :title="contentCentered ? t('uncenter') : t('center')" :aria-label="contentCentered ? t('uncenter') : t('center')" :aria-pressed="contentCentered" @click="emit('update:contentCentered', !contentCentered)">
         <BaseIcon :src="alignCenterIcon" />
       </BaseIconButton>
-      <BaseIconButton :selected="theme === 'dark'" title="切换黑白主题" aria-label="切换黑白主题" @click="emit('update:theme', theme === 'dark' ? 'light' : 'dark')">
+      <BaseIconButton :selected="theme === 'dark'" :title="t('switchTheme')" :aria-label="t('switchTheme')" @click="emit('update:theme', theme === 'dark' ? 'light' : 'dark')">
         <BaseIcon :src="themeIcon" />
       </BaseIconButton>
-      <BaseIconButton :selected="editorExpanded" :title="editorExpanded ? '收起编辑器' : '展开编辑器'" :aria-label="editorExpanded ? '收起编辑器' : '展开编辑器'" :aria-pressed="editorExpanded" @click="emit('update:editorExpanded', !editorExpanded)">
+      <BaseIconButton :selected="editorExpanded" :title="editorExpanded ? t('collapseEditor') : t('expandEditor')" :aria-label="editorExpanded ? t('collapseEditor') : t('expandEditor')" :aria-pressed="editorExpanded" @click="emit('update:editorExpanded', !editorExpanded)">
         <BaseIcon :src="editIcon" />
       </BaseIconButton>
     </div>
@@ -51,6 +51,7 @@ import themeIcon from '../assets/icons/theme.svg'
 import tocIcon from '../assets/icons/toc.svg'
 import BaseIcon from './BaseIcon.vue'
 import BaseIconButton from './BaseIconButton.vue'
+import { t } from '../i18n'
 
 defineProps<{
   statusText: string

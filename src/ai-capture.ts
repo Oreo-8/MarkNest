@@ -2,6 +2,7 @@ import TurndownService from 'turndown'
 import { AI_SITES, findAiSite, type AiSiteDefinition } from './ai-sites'
 
 import type { CapturedConversation } from './messaging'
+import { currentLanguage, t } from './i18n'
 
 type MessageRole = 'user' | 'assistant' | 'system'
 
@@ -114,7 +115,7 @@ function conversationTitle(site: AiSiteDefinition) {
   for (const suffix of site.titleSuffixes) {
     documentTitle = documentTitle.replace(new RegExp(`\\s*[-–—|·]\\s*${suffix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'i'), '').trim()
   }
-  return heading || documentTitle || `${site.name} 对话`
+  return heading || documentTitle || t('conversationSuffix', { site: site.name })
 }
 
 function siteForCurrentPage() {
@@ -129,27 +130,27 @@ function siteForCurrentPage() {
 
 export function captureConversation(): CapturedConversation {
   const site = siteForCurrentPage()
-  if (!site) throw new Error('当前网站暂不支持 AI 对话收录')
+  if (!site) throw new Error(t('siteNotSupported'))
   const converter = createConverter()
   const messages = collectMessages(site)
   const sections: string[] = []
 
   for (const { element, role } of messages) {
-    const label = role === 'user' ? '你' : role === 'assistant' ? site.name : '系统'
+    const label = role === 'user' ? t('you') : role === 'assistant' ? site.name : t('system')
     const markdown = converter.turndown(cleanMessage(element)).trim()
     if (markdown) sections.push(`## ${label}\n\n${markdown}`)
   }
 
   if (!sections.length) {
-    throw new Error(`没有读取到对话内容，请确认当前页面已打开一段 ${site.name} 对话并已加载完成`)
+    throw new Error(t('noConversation', { site: site.name }))
   }
   const title = conversationTitle(site)
-  const exportedAt = new Intl.DateTimeFormat('zh-CN', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())
+  const exportedAt = new Intl.DateTimeFormat(currentLanguage.value, { dateStyle: 'medium', timeStyle: 'short' }).format(new Date())
   return {
     title,
     sourceUrl: location.href,
     siteId: site.id,
     siteName: site.name,
-    content: `# ${title}\n\n> 来源：[${site.name} 对话](${location.href})  \n> 收录时间：${exportedAt}\n\n---\n\n${sections.join('\n\n---\n\n')}\n`,
+    content: `# ${title}\n\n> ${t('source')}：[${t('conversationSuffix', { site: site.name })}](${location.href})  \n> ${t('capturedAt')}：${exportedAt}\n\n---\n\n${sections.join('\n\n---\n\n')}\n`,
   }
 }

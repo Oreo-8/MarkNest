@@ -172,7 +172,29 @@ button, textarea, input { font: inherit; }
 .dark .hljs-string, .dark .hljs-attr, .dark .hljs-template-variable { color: #9ecbff; }
 .dark .hljs-number, .dark .hljs-symbol, .dark .hljs-bullet { color: #f6a96c; }
 
-textarea { width: 100%; height: 100%; padding: 24px; resize: none; border: 0; outline: none; color: var(--ink); background: var(--panel); font: 14px/1.7 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; tab-size: 2; }
+.editor-status { display: flex; min-width: 0; align-items: center; gap: 10px; overflow: hidden; white-space: nowrap; }
+.editor-status span:first-child { color: var(--ink); }
+.markdown-editor { min-width: 0; min-height: 0; overflow: hidden; background: var(--panel); }
+.markdown-editor .cm-editor { height: 100%; color: var(--ink); background: var(--panel); font: 14px/1.7 ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+.markdown-editor .cm-scroller { overflow: auto; font-family: inherit; }
+.markdown-editor .cm-content { padding: 20px 0 80px; caret-color: var(--accent); }
+.markdown-editor .cm-line { padding: 0 24px 0 14px; }
+.markdown-editor .cm-gutters { min-width: 42px; border: 0; border-right: 1px solid var(--line); color: color-mix(in srgb, var(--muted) 75%, transparent); background: color-mix(in srgb, var(--panel) 96%, var(--ink)); }
+.markdown-editor .cm-lineNumbers .cm-gutterElement { min-width: 32px; padding: 0 6px 0 4px; }
+.markdown-editor .cm-gutterElement { line-height: 1.7; }
+.markdown-editor .cm-activeLineGutter { color: var(--accent); background: color-mix(in srgb, var(--accent) 9%, transparent); font-weight: 700; }
+.markdown-editor .cm-activeLine { background: color-mix(in srgb, var(--accent) 5%, transparent); }
+.markdown-editor .cm-selectionBackground, .markdown-editor .cm-content ::selection { background: color-mix(in srgb, var(--accent) 25%, transparent) !important; }
+.markdown-editor .cm-cursor { border-left-color: var(--accent); border-left-width: 2px; }
+.markdown-editor .cm-focused { outline: none; }
+.markdown-editor .cm-foldGutter { width: 10px; }
+.markdown-editor .cm-foldPlaceholder { border-color: var(--line); color: var(--muted); background: var(--soft); }
+.markdown-editor .cm-panels { color: var(--ink); border-color: var(--line); background: var(--panel); }
+.markdown-editor .cm-search { display: flex; flex-wrap: wrap; gap: 5px; padding: 7px 9px; }
+.markdown-editor .cm-search input { height: 26px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--panel); }
+.markdown-editor .cm-search button { min-height: 26px; border: 1px solid var(--line); border-radius: 5px; color: var(--ink); background: var(--panel); cursor: pointer; }
+.markdown-editor .cm-search button:hover { color: var(--accent); background: var(--soft); }
+.markdown-editor .cm-placeholder { color: var(--muted); font-style: italic; }
 .format-toolbar {
   position: relative; z-index: 5; display: flex; flex-wrap: wrap; align-content: start; align-items: center; gap: 3px; min-width: 0; padding: 6px 8px; overflow: visible;
   border-bottom: 1px solid var(--line); background: color-mix(in srgb, var(--panel) 96%, var(--ink));

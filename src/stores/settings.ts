@@ -1,8 +1,10 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import type { UserSettings } from '../types'
+import { normalizeLanguage, setCurrentLanguage, type Language } from '../i18n'
 
 const defaults: UserSettings = {
+  language: 'zh-CN',
   theme: 'dark',
   fontSize: 15,
   contentCentered: false,
@@ -11,26 +13,41 @@ const defaults: UserSettings = {
 }
 
 export const useSettingsStore = defineStore('settings', () => {
+  const language = ref<Language>(defaults.language)
   const theme = ref<'dark' | 'light'>(defaults.theme)
   const fontSize = ref(defaults.fontSize)
   const contentCentered = ref(defaults.contentCentered)
   const contentSideMargin = ref(defaults.contentSideMargin)
   const editorWidth = ref<number | null>(defaults.editorWidth)
+  let listening = false
+
+  function applyLanguage(value: unknown) {
+    language.value = normalizeLanguage(value)
+    setCurrentLanguage(language.value)
+  }
 
   async function load() {
     const stored = await chrome.storage.local.get('userSettings')
     let local: Partial<UserSettings> = {}
     try { local = JSON.parse(localStorage.getItem('userSettings') || '{}') as Partial<UserSettings> } catch { /* ignore */ }
     const settings = { ...defaults, ...local, ...stored.userSettings as Partial<UserSettings> }
+    applyLanguage(settings.language)
     theme.value = settings.theme === 'light' ? 'light' : 'dark'
     fontSize.value = Math.min(22, Math.max(12, Number(settings.fontSize) || defaults.fontSize))
     contentCentered.value = Boolean(settings.contentCentered)
     contentSideMargin.value = Math.min(320, Math.max(32, Number(settings.contentSideMargin) || defaults.contentSideMargin))
     editorWidth.value = settings.editorWidth && settings.editorWidth >= 280 ? settings.editorWidth : null
+    if (!listening) {
+      listening = true
+      chrome.storage.onChanged.addListener((changes, area) => {
+        if (area === 'local' && changes.userSettings) applyLanguage(changes.userSettings.newValue?.language)
+      })
+    }
   }
 
   function persist() {
     const settings: UserSettings = {
+      language: language.value,
       theme: theme.value,
       fontSize: fontSize.value,
       contentCentered: contentCentered.value,
@@ -41,5 +58,5 @@ export const useSettingsStore = defineStore('settings', () => {
     void chrome.storage.local.set({ userSettings: settings })
   }
 
-  return { theme, fontSize, contentCentered, contentSideMargin, editorWidth, load, persist }
+  return { language, theme, fontSize, contentCentered, contentSideMargin, editorWidth, load, persist }
 })

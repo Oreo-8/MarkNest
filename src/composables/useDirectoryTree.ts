@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { sendMessage } from '../messaging'
 import type { FileTreeNode } from '../types'
+import { t } from '../i18n'
 
 type ShowToast = (message: string) => void
 
@@ -35,10 +36,10 @@ export function useDirectoryTree(getSourceUrl: () => string | null, showToast: S
     error.value = ''
     try {
       const result = await sendMessage('listLocalDirectory', { url: node.url })
-      if (!result?.ok || !result.entries) throw new Error(result?.error || '目录读取失败')
+      if (!result?.ok || !result.entries) throw new Error(result?.error || t('directoryFailed'))
       node.children = result.entries.map((entry) => createNode(entry.name, entry.kind, entry.url))
     } catch (reason) {
-      error.value = reason instanceof Error ? reason.message : '目录读取失败'
+      error.value = reason instanceof Error ? reason.message : t('directoryFailed')
       showToast(error.value)
     } finally {
       node.loading = false

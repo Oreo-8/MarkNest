@@ -1,6 +1,6 @@
 # MarkNest - 本地 Markdown 阅读与编辑器
 
-MarkNest - 本地 Markdown 阅读与编辑器是一款基于 WXT、Vue 3、TypeScript、Pinia 与 `@webext-core/messaging` 构建的 Chrome / Edge Manifest V3 扩展，用于在浏览器中离线阅读、编辑和保存本地 Markdown 文件。
+MarkNest - 本地 Markdown 阅读与编辑器是一款基于 WXT、Vue 3、TypeScript、Pinia 与 `@webext-core/messaging` 构建的 Chrome / Edge / Firefox Manifest V3 扩展，用于在浏览器中离线阅读、编辑和保存本地 Markdown 文件。
 
 ## 开发
 
@@ -45,6 +45,22 @@ pnpm release
 ```
 
 压缩包输出为 `.output/marknest-3.0.0-chrome.zip`。
+
+生成 Microsoft Edge 加载项提交包：
+
+```bash
+pnpm release:edge
+```
+
+提交包输出为 `.output/marknest-3.0.0-edge.zip`。Edge 商店文案、权限说明和认证测试说明见 `docs/edge-store/zh-CN.md`，隐私政策见 `docs/privacy-policy.md`。
+
+生成 Firefox Add-ons 提交包和供 AMO 审核复现构建的源码包：
+
+```bash
+pnpm release:firefox
+```
+
+安装包输出为 `.output/marknest-3.0.0-firefox.zip`，源码包输出为 `.output/marknest-3.0.0-sources.zip`。Firefox 商店文案和审核说明见 `docs/firefox-store/zh-CN.md`，完整构建步骤见 `FIREFOX_BUILD.md`。
 
 ## 使用
 

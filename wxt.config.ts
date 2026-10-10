@@ -5,7 +5,7 @@ export default defineConfig({
   modules: ['@wxt-dev/module-vue', '@wxt-dev/unocss'],
   srcDir: 'src',
   publicDir: 'public',
-  manifest: {
+  manifest: ({ browser }) => ({
     name: 'MarkNest - 本地 Markdown 阅读与编辑器',
     short_name: 'MarkNest',
     description: '在浏览器中预览、编辑和保存本地 Markdown 文件，并一键收录 AI 对话。',
@@ -27,5 +27,29 @@ export default defineConfig({
         description: '打开 MarkNest',
       },
     },
+    ...(browser === 'firefox' ? {
+      browser_specific_settings: {
+        gecko: {
+          id: 'marknest@oreo-8.github.io',
+          strict_min_version: '153.0',
+          data_collection_permissions: {
+            required: ['none'],
+          },
+        },
+      },
+    } : {}),
+  }),
+  zip: {
+    includeSources: [
+      'src/**',
+      'public/**',
+      'package.json',
+      'pnpm-lock.yaml',
+      'tsconfig.json',
+      'uno.config.ts',
+      'wxt.config.ts',
+      'README.md',
+      'FIREFOX_BUILD.md',
+    ],
   },
 })

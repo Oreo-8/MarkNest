@@ -34,15 +34,15 @@
         />
       </section>
 
-      <div class="resizer" title="拖动调整预览与编辑宽度；双击恢复默认比例" @pointerdown="startResize" @dblclick="resetEditorWidth"></div>
+      <div class="resizer" :title="t('resize')" @pointerdown="startResize" @dblclick="resetEditorWidth"></div>
       <EditorPanel v-model="content" @changed="onContentChanged" @scroll-progress="markdownPreview?.syncToProgress($event)" @save="save" @save-as="saveAs" />
 
-      <div v-if="dropVisible" class="drop-overlay"><div><strong>松开即可打开</strong><span>支持 .md 和 .markdown 文件</span></div></div>
+      <div v-if="dropVisible" class="drop-overlay"><div><strong>{{ t('dropOpen') }}</strong><span>{{ t('dropHint') }}</span></div></div>
     </section>
     <footer>
       <button v-if="fileAccessAllowed === false" type="button" class="file-access-link" @click="showFileAccessNotice = true">{{ fileAccessStatus }}</button>
       <span v-else>{{ fileAccessStatus }}</span>
-      <span v-if="editorExpanded"><kbd>Ctrl/⌘ S</kbd> 保存　<kbd>Ctrl/⌘ Shift S</kbd> 另存为</span>
+      <span v-if="editorExpanded"><kbd>Ctrl/⌘ S</kbd> {{ t('savedShortcut') }}　<kbd>Ctrl/⌘ Shift S</kbd> {{ t('saveAsShortcut') }}</span>
     </footer>
     <FileAccessNotice
       v-if="showFileAccessNotice"
@@ -72,6 +72,7 @@ import { useFileAccess } from './composables/useFileAccess'
 import { useMarkdownDocument } from './composables/useMarkdownDocument'
 import { useToast } from './composables/useToast'
 import { createMarkdownRenderer } from './markdown'
+import { setCurrentLanguage, t } from './i18n'
 import { useSettingsStore } from './stores/settings'
 
 const params = new URLSearchParams(location.search)
@@ -89,7 +90,7 @@ const markdownPreview = ref<InstanceType<typeof MarkdownPreview> | null>(null)
 
 const { message: toastMessage, show: showToast } = useToast()
 const settings = useSettingsStore()
-const { theme, fontSize, contentCentered, contentSideMargin, editorWidth } = storeToRefs(settings)
+const { language, theme, fontSize, contentCentered, contentSideMargin, editorWidth } = storeToRefs(settings)
 const { load: loadSettings, persist: persistSettings } = settings
 const {
   content, fileName, sourceUrl, unsaved, dropVisible, persistence,
@@ -118,7 +119,7 @@ const { workspace, start: startResize, stop: stopResize, reset: resetEditorWidth
 })
 
 const rendered = computed(() => renderer.render(content.value))
-const statusText = computed(() => `${fileName.value}${unsaved.value ? ' · 有未保存修改' : ''}`)
+const statusText = computed(() => `${fileName.value}${unsaved.value ? ` · ${t('unsaved')}` : ''}`)
 const workspaceStyle = computed(() => ({
   '--editor-width': editorWidth.value ? `${editorWidth.value}px` : '42%',
   '--content-side-margin': `${contentSideMargin.value}px`,
@@ -137,7 +138,7 @@ function onContentChanged() {
 
 async function openTreeFile(url: string) {
   const name = (() => { try { return decodeURIComponent(new URL(url).pathname.split('/').pop() || url) } catch { return url } })()
-  if (unsaved.value && !confirm(`当前文档 ${fileName.value} 有未保存修改，仍要打开 ${name} 吗？`)) return
+  if (unsaved.value && !confirm(t('openUnsaved', { current: fileName.value, next: name }))) return
   await openLocalLink(url)
 }
 
@@ -162,7 +163,8 @@ async function initialize() {
   markdownPreview.value?.updateScrollSpy()
 }
 
-watch([theme, fontSize, contentCentered, contentSideMargin], persistSettings)
+watch([language, theme, fontSize, contentCentered, contentSideMargin], persistSettings)
+watch(language, setCurrentLanguage)
 watch([fileName, unsaved], () => { document.title = `${unsaved.value ? '• ' : ''}${fileName.value}` })
 watch(rendered, () => {
   activeHeadingId.value = ''

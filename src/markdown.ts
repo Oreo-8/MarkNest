@@ -4,6 +4,7 @@ import hljs from 'highlight.js/lib/common'
 import DOMPurify from 'dompurify'
 import katex from 'katex'
 import type { HeadingItem } from './types'
+import { t } from './i18n'
 
 const escapeHtml = (value: string) => MarkdownIt().utils.escapeHtml(value)
 
@@ -64,9 +65,7 @@ export function createMarkdownRenderer() {
   })
   md.renderer.rules.math_block = (tokens, index) => `<div class="math-block">${katex.renderToString(tokens[index].content, { displayMode: true, throwOnError: false, output: 'htmlAndMathml' })}</div>`
 
-  const calloutLabels: Record<string, string> = {
-    NOTE: '提示', TIP: '技巧', IMPORTANT: '重要', WARNING: '警告', CAUTION: '注意', SUCCESS: '成功',
-  }
+  const calloutLabel = (type: string) => ({ NOTE: t('note'), TIP: t('tip'), IMPORTANT: t('important'), WARNING: t('warning'), CAUTION: t('caution'), SUCCESS: t('success') } as Record<string, string>)[type]
   md.core.ruler.after('block', 'callouts', (state) => {
     for (let index = 0; index < state.tokens.length; index += 1) {
       if (state.tokens[index].type !== 'blockquote_open') continue
@@ -74,9 +73,9 @@ export function createMarkdownRenderer() {
       const match = inline?.content.match(/^\[!([A-Z]+)\]\s*\n?/i)
       if (!inline || !match) continue
       const type = match[1].toLocaleUpperCase()
-      if (!calloutLabels[type]) continue
+      if (!calloutLabel(type)) continue
       state.tokens[index].attrJoin('class', `callout callout-${type.toLocaleLowerCase()}`)
-      state.tokens[index].attrSet('data-callout-title', calloutLabels[type])
+      state.tokens[index].attrSet('data-callout-title', calloutLabel(type))
       inline.content = inline.content.slice(match[0].length)
       const firstText = inline.children?.find(token => token.type === 'text' && token.content.includes(match[0].trim()))
       if (firstText) firstText.content = firstText.content.replace(/^\[![A-Z]+\]\s*\n?/i, '')
@@ -123,7 +122,7 @@ export function createMarkdownRenderer() {
         language = result.language || 'text'
       }
     } catch { /* 保留已转义的原始代码 */ }
-    return `<div class="code-block"><div class="code-toolbar"><button class="copy-code" type="button" title="复制代码" aria-label="复制代码"><span class="code-language">${escapeHtml(language)}</span><span class="copy-symbol" aria-hidden="true">⧉</span><span class="check-symbol" aria-hidden="true">✓</span></button></div><pre><code>${highlighted}</code></pre></div>`
+    return `<div class="code-block"><div class="code-toolbar"><button class="copy-code" type="button" title="${t('copyCode')}" aria-label="${t('copyCode')}"><span class="code-language">${escapeHtml(language)}</span><span class="copy-symbol" aria-hidden="true">⧉</span><span class="check-symbol" aria-hidden="true">✓</span></button></div><pre><code>${highlighted}</code></pre></div>`
   }
 
   return {

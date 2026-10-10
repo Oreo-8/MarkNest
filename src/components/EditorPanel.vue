@@ -4,6 +4,9 @@
       v-model:expanded="toolbarExpanded"
       :line-count="lineCount"
       :character-count="modelValue.length"
+      :cursor-line="cursorLine"
+      :cursor-column="cursorColumn"
+      :selection-count="selectionCount"
       :can-undo="canUndo"
       :can-redo="canRedo"
       @remember-selection="rememberSelection"
@@ -18,21 +21,23 @@
       @link="insertLink"
       @table="insertTable"
       @clear="clearFormatting"
-      @undo="restoreHistory(historyIndex - 1)"
-      @redo="restoreHistory(historyIndex + 1)"
+      @undo="restoreHistory('undo')"
+      @redo="restoreHistory('redo')"
     />
 
-    <textarea
-      ref="textarea" :value="modelValue" spellcheck="false" placeholder="# 从这里开始写 Markdown…"
-      @input="commitValue(($event.target as HTMLTextAreaElement).value, true); rememberSelection()"
-      @keydown="onKeydown" @keyup="rememberSelection" @click="rememberSelection" @select="rememberSelection" @scroll.passive="onScroll"
-    ></textarea>
+    <div ref="editorHost" class="markdown-editor"></div>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, ref, watch } from 'vue'
+import { redo, redoDepth, undo, undoDepth } from '@codemirror/commands'
+import { markdown } from '@codemirror/lang-markdown'
+import { EditorState, Prec, type Extension } from '@codemirror/state'
+import { EditorView, keymap, placeholder } from '@codemirror/view'
+import { basicSetup } from 'codemirror'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import EditorToolbar from './EditorToolbar.vue'
+import { t } from '../i18n'
 
 const props = defineProps<{ modelValue: string }>()
 const emit = defineEmits<{
@@ -43,73 +48,52 @@ const emit = defineEmits<{
   'save-as': []
 }>()
 
-const textarea = ref<HTMLTextAreaElement | null>(null)
+const editorHost = ref<HTMLDivElement | null>(null)
+let editor: EditorView | null = null
+let editorExtensions: Extension[] = []
 const savedSelection = ref({ start: 0, end: 0 })
-const history = ref<string[]>([props.modelValue])
-const historyIndex = ref(0)
 const toolbarExpanded = ref(true)
 const lineCount = computed(() => props.modelValue.length ? props.modelValue.split(/\r\n|\r|\n/).length : 1)
-const canUndo = computed(() => historyIndex.value > 0)
-const canRedo = computed(() => historyIndex.value < history.value.length - 1)
-let lastTypingAt = 0
+const canUndo = ref(false)
+const canRedo = ref(false)
+const cursorLine = ref(1)
+const cursorColumn = ref(1)
+const selectionCount = ref(0)
 
 watch(() => props.modelValue, (value) => {
-  if (value === history.value[historyIndex.value]) return
-  history.value = [value]
-  historyIndex.value = 0
-  lastTypingAt = 0
+  if (!editor || value === editor.state.doc.toString()) return
+  editor.setState(EditorState.create({ doc: value, extensions: editorExtensions }))
+  updateEditorState()
 })
 
-function commitValue(value: string, mergeTyping = false) {
+function commitValue(value: string) {
   if (value === props.modelValue) return
-  const now = Date.now()
-  if (mergeTyping && lastTypingAt > 0 && now - lastTypingAt < 800 && historyIndex.value === history.value.length - 1) {
-    history.value[historyIndex.value] = value
-    lastTypingAt = now
-    emit('update:modelValue', value)
-    emit('changed')
-    return
-  }
-  const nextHistory = history.value.slice(0, historyIndex.value + 1)
-  nextHistory.push(value)
-  if (nextHistory.length > 100) nextHistory.shift()
-  history.value = nextHistory
-  historyIndex.value = nextHistory.length - 1
-  lastTypingAt = mergeTyping ? now : 0
   emit('update:modelValue', value)
   emit('changed')
 }
 
-function restoreHistory(index: number) {
-  if (index < 0 || index >= history.value.length) return
-  historyIndex.value = index
-  lastTypingAt = 0
-  emit('update:modelValue', history.value[index])
-  emit('changed')
-  void nextTick(() => {
-    textarea.value?.focus()
-    const position = Math.min(savedSelection.value.start, history.value[index].length)
-    textarea.value?.setSelectionRange(position, position)
-  })
+function restoreHistory(direction: 'undo' | 'redo') {
+  if (!editor) return
+  ;(direction === 'undo' ? undo : redo)(editor)
 }
 
 function rememberSelection() {
-  if (!textarea.value) return
-  savedSelection.value = { start: textarea.value.selectionStart, end: textarea.value.selectionEnd }
+  if (!editor) return
+  const selection = editor.state.selection.main
+  savedSelection.value = { start: selection.from, end: selection.to }
 }
 
 function getSelection() {
-  if (!textarea.value || document.activeElement !== textarea.value) return savedSelection.value
-  return { start: textarea.value.selectionStart, end: textarea.value.selectionEnd }
+  if (!editor) return savedSelection.value
+  const selection = editor.state.selection.main
+  return { start: selection.from, end: selection.to }
 }
 
 function replaceRange(start: number, end: number, replacement: string, selectStart: number, selectEnd: number) {
-  commitValue(props.modelValue.slice(0, start) + replacement + props.modelValue.slice(end))
   savedSelection.value = { start: selectStart, end: selectEnd }
-  void nextTick(() => {
-    textarea.value?.focus()
-    textarea.value?.setSelectionRange(selectStart, selectEnd)
-  })
+  if (!editor) return
+  editor.dispatch({ changes: { from: start, to: end, insert: replacement }, selection: { anchor: selectStart, head: selectEnd } })
+  editor.focus()
 }
 
 function wrapSelection(prefix: string, suffix: string, placeholder: string) {
@@ -146,7 +130,7 @@ function setHeading(level: number) {
   transformLines(lines => lines.map((line) => {
     const clean = line.replace(/^#{1,6}\s+/, '')
     if (!clean && lines.length > 1) return ''
-    return marker + (clean || (level ? '标题' : ''))
+    return marker + (clean || (level ? t('heading', { level }) : ''))
   }))
 }
 
@@ -178,21 +162,23 @@ function insertBlock(before: string, content: string, after = '', selectContent 
 
 function insertLink(image = false) {
   const { start, end } = getSelection()
-  const label = props.modelValue.slice(start, end) || (image ? '图片描述' : '链接文字')
-  const url = image ? '图片地址' : 'https://'
+  const label = props.modelValue.slice(start, end) || (image ? t('insertImage') : t('link'))
+  const url = image ? 'https://' : 'https://'
   const replacement = `${image ? '!' : ''}[${label}](${url})`
   const urlStart = start + (image ? 1 : 0) + label.length + 3
   replaceRange(start, end, replacement, urlStart, urlStart + url.length)
 }
 
 function insertTable() {
-  const table = '| 列 1 | 列 2 | 列 3 |\n| --- | --- | --- |\n| 内容 | 内容 | 内容 |'
+  const column = t('tableColumn')
+  const cell = t('tableContent')
+  const table = `| ${column} 1 | ${column} 2 | ${column} 3 |\n| --- | --- | --- |\n| ${cell} | ${cell} | ${cell} |`
   insertBlock('', table, '', false)
 }
 
 function insertCallout(type: string) {
   const { start, end } = getSelection()
-  const selected = props.modelValue.slice(start, end) || '提示内容'
+  const selected = props.modelValue.slice(start, end) || t('callout')
   const body = selected.split('\n').map(line => `> ${line}`).join('\n')
   const leadingBreak = start > 0 && props.modelValue[start - 1] !== '\n' ? '\n' : ''
   const trailingBreak = end < props.modelValue.length && props.modelValue[end] !== '\n' ? '\n' : ''
@@ -227,27 +213,64 @@ function applyList(value: string) {
   if (value === 'task') toggleLinePrefix(/^- \[[ xX]\]\s+/, '- [ ] ')
 }
 
-function onKeydown(event: KeyboardEvent) {
-  const command = event.ctrlKey || event.metaKey
-  const key = event.key.toLocaleLowerCase()
-  if (command && key === 'z') { event.preventDefault(); restoreHistory(historyIndex.value + (event.shiftKey ? 1 : -1)); return }
-  if (command && key === 'y') { event.preventDefault(); restoreHistory(historyIndex.value + 1); return }
-  if (command && key === 'b') { event.preventDefault(); wrapSelection('**', '**', '粗体文字'); return }
-  if (command && key === 'i') { event.preventDefault(); wrapSelection('*', '*', '斜体文字'); return }
-  if (command && key === 'k') { event.preventDefault(); insertLink(); return }
-  if (command && event.altKey && ['1', '2', '3'].includes(event.key)) { event.preventDefault(); setHeading(Number(event.key)); return }
-  if (event.key !== 'Tab' || !textarea.value) return
-  event.preventDefault()
-  const { start, end } = getSelection()
-  textarea.value.setRangeText('  ', start, end, 'end')
-  commitValue(textarea.value.value)
-  rememberSelection()
+function run(command: () => void) {
+  command()
+  return true
 }
 
 function onScroll() {
-  if (!textarea.value) return
-  const max = textarea.value.scrollHeight - textarea.value.clientHeight
-  emit('scroll-progress', max > 0 ? textarea.value.scrollTop / max : 0)
+  if (!editor) return
+  const scroller = editor.scrollDOM
+  const max = scroller.scrollHeight - scroller.clientHeight
+  emit('scroll-progress', max > 0 ? scroller.scrollTop / max : 0)
 }
+
+function updateEditorState() {
+  if (!editor) return
+  const selection = editor.state.selection.main
+  const line = editor.state.doc.lineAt(selection.head)
+  savedSelection.value = { start: selection.from, end: selection.to }
+  cursorLine.value = line.number
+  cursorColumn.value = selection.head - line.from + 1
+  selectionCount.value = selection.to - selection.from
+  canUndo.value = undoDepth(editor.state) > 0
+  canRedo.value = redoDepth(editor.state) > 0
+}
+
+onMounted(() => {
+  if (!editorHost.value) return
+  editorExtensions = [
+      basicSetup,
+      markdown(),
+      EditorView.lineWrapping,
+      placeholder(t('editorPlaceholder')),
+      EditorView.contentAttributes.of({ spellcheck: 'false', 'aria-label': t('textFormat') }),
+      Prec.high(keymap.of([
+        { key: 'Mod-b', run: () => run(() => wrapSelection('**', '**', t('bold'))) },
+        { key: 'Mod-i', run: () => run(() => wrapSelection('*', '*', t('italic'))) },
+        { key: 'Mod-k', run: () => run(() => insertLink()) },
+        { key: 'Mod-Alt-1', run: () => run(() => setHeading(1)) },
+        { key: 'Mod-Alt-2', run: () => run(() => setHeading(2)) },
+        { key: 'Mod-Alt-3', run: () => run(() => setHeading(3)) },
+      ])),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) commitValue(update.state.doc.toString())
+        updateEditorState()
+      }),
+  ]
+  editor = new EditorView({
+    parent: editorHost.value,
+    doc: props.modelValue,
+    extensions: editorExtensions,
+  })
+  editor.scrollDOM.addEventListener('scroll', onScroll, { passive: true })
+  updateEditorState()
+})
+
+onBeforeUnmount(() => {
+  editor?.scrollDOM.removeEventListener('scroll', onScroll)
+  editor?.destroy()
+  editor = null
+})
 
 </script>

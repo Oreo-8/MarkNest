@@ -2,6 +2,7 @@ import { ref } from 'vue'
 import type { InitialLocalFile } from '../types'
 import { sendMessage } from '../messaging'
 import { useEditorPersistence } from './useEditorPersistence'
+import { t } from '../i18n'
 
 type ShowToast = (message: string) => void
 
@@ -28,20 +29,20 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
   }
 
   async function openLocalLink(href: string) {
-    if (!sourceUrl.value) return options.showToast('当前文件没有本地路径，无法定位相对链接')
+    if (!sourceUrl.value) return options.showToast(t('noRelativePath'))
     try {
       const url = new URL(href, sourceUrl.value)
-      if (url.protocol !== 'file:' || !/\.(md|markdown)$/i.test(url.pathname)) return options.showToast('目前仅支持打开本地 Markdown 链接')
+      if (url.protocol !== 'file:' || !/\.(md|markdown)$/i.test(url.pathname)) return options.showToast(t('localMarkdownOnly'))
       const result = await sendMessage('openLocalLink', { url: url.href })
-      if (!result?.ok) options.showToast(result?.error || '文档打开失败')
+      if (!result?.ok) options.showToast(result?.error || t('openFailed'))
     } catch (error) {
-      options.showToast(error instanceof Error ? error.message : '链接地址无效')
+      options.showToast(error instanceof Error ? error.message : t('invalidLink'))
     }
   }
 
   async function loadFile(file?: File, handle: FileSystemFileHandle | null = null) {
     if (!file) return
-    if (!/\.(md|markdown)$/i.test(file.name)) return options.showToast('请选择 .md 或 .markdown 文件')
+    if (!/\.(md|markdown)$/i.test(file.name)) return options.showToast(t('chooseMarkdown'))
     try {
       content.value = await file.text()
       fileName.value = file.name
@@ -49,38 +50,38 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
       unsaved.value = false
       await persistence.setSourceHandle(handle)
       persistence.persistSession()
-      options.showToast(`已打开 ${file.name}`)
+      options.showToast(t('openedFile', { name: file.name }))
     } catch {
-      options.showToast('文件读取失败')
+      options.showToast(t('readFailed'))
     }
   }
 
   async function save() {
-    if (!window.showOpenFilePicker) return options.showToast('当前浏览器不支持直接修改源文件')
+    if (!window.showOpenFilePicker) return options.showToast(t('directSaveUnsupported'))
     try {
       let handle = persistence.getSourceHandle()
       if (!handle) {
         const [selected] = await window.showOpenFilePicker({
           multiple: false,
-          types: [{ description: 'Markdown 文件', accept: { 'text/markdown': ['.md', '.markdown'] } }],
+          types: [{ description: t('markdownFile'), accept: { 'text/markdown': ['.md', '.markdown'] } }],
         })
-        if (fileName.value !== '未命名.md' && selected.name !== fileName.value && !confirm(`选择的是 ${selected.name}，不是当前的 ${fileName.value}。仍要覆盖吗？`)) return
+        if (fileName.value !== '未命名.md' && selected.name !== fileName.value && !confirm(t('overwriteDifferent', { selected: selected.name, current: fileName.value }))) return
         await persistence.setSourceHandle(selected)
         handle = selected
       }
       let permission = await handle.queryPermission({ mode: 'readwrite' })
       if (permission !== 'granted') permission = await handle.requestPermission({ mode: 'readwrite' })
-      if (permission !== 'granted') return options.showToast('未获得源文件写入权限')
+      if (permission !== 'granted') return options.showToast(t('writeDenied'))
       const writable = await handle.createWritable()
       await writable.write(content.value)
       await writable.close()
       fileName.value = handle.name
       unsaved.value = false
       persistence.persistSession()
-      options.showToast(`已保存 ${fileName.value}`)
+      options.showToast(t('savedFile', { name: fileName.value }))
     } catch (error) {
       if (error instanceof DOMException && error.name === 'AbortError') return
-      options.showToast('源文件保存失败，请重新选择文件')
+      options.showToast(t('sourceSaveFailed'))
     }
   }
 
@@ -90,7 +91,7 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
       if (window.showSaveFilePicker) {
         const handle = await window.showSaveFilePicker({
           suggestedName,
-          types: [{ description: 'Markdown 文件', accept: { 'text/markdown': ['.md', '.markdown'] } }],
+          types: [{ description: t('markdownFile'), accept: { 'text/markdown': ['.md', '.markdown'] } }],
         })
         const writable = await handle.createWritable()
         await writable.write(content.value)
@@ -106,9 +107,9 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
       }
       unsaved.value = false
       persistence.persistSession()
-      options.showToast(`已保存为 ${fileName.value}`)
+      options.showToast(t('savedAsFile', { name: fileName.value }))
     } catch (error) {
-      if (!(error instanceof DOMException && error.name === 'AbortError')) options.showToast('保存失败')
+      if (!(error instanceof DOMException && error.name === 'AbortError')) options.showToast(t('saveFailed'))
     }
   }
 
@@ -151,7 +152,7 @@ export function useMarkdownDocument(options: MarkdownDocumentOptions) {
         await chrome.storage.local.remove(storageKey)
         await persistence.setSourceHandle(null)
         persistence.persistSession()
-        options.showToast(`已收录 ${fileName.value}`)
+        options.showToast(t('capturedFile', { name: fileName.value }))
       }
     } else if (options.fresh) {
       await persistence.clearSession()

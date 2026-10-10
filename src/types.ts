@@ -28,6 +28,7 @@ export interface FileTreeNode {
 }
 
 export interface UserSettings {
+  language: import('./i18n').Language
   theme: 'dark' | 'light'
   fontSize: number
   contentCentered: boolean

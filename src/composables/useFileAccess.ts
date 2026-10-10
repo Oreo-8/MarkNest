@@ -1,26 +1,32 @@
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { sendMessage } from '../messaging'
+import { currentLanguage, t } from '../i18n'
 
 type ShowToast = (message: string) => void
 
 export function useFileAccess(showToast: ShowToast, initiallyRequired = false) {
-  const status = ref('正在检查本地文件接管权限…')
+  const status = ref(t('checkingAccess'))
   const allowed = ref<boolean | null>(null)
   const noticeVisible = ref(initiallyRequired)
   const checking = ref(false)
 
+  function updateStatus() {
+    if (typeof globalThis.chrome?.extension?.isAllowedFileSchemeAccess !== 'function') status.value = t('accessLocalOnly')
+    else if (allowed.value === null) status.value = t('checkingAccess')
+    else status.value = allowed.value ? t('accessEnabled') : t('accessRequired')
+  }
+  watch(currentLanguage, updateStatus)
+
   async function check(showWhenDenied = true) {
     if (typeof globalThis.chrome?.extension?.isAllowedFileSchemeAccess !== 'function') {
-      status.value = '文件仅在本机处理'
+      status.value = t('accessLocalOnly')
       return null
     }
     checking.value = true
     try {
       const hasAccess = await chrome.extension.isAllowedFileSchemeAccess()
       allowed.value = hasAccess
-      status.value = hasAccess
-        ? '✓ 已开启本地 MD 自动接管'
-        : '⚠ 请开启“允许访问文件网址”，否则无法打开本地 MD'
+      updateStatus()
       if (hasAccess) noticeVisible.value = false
       else if (showWhenDenied) noticeVisible.value = true
       void sendMessage('refreshFileAccessBadge').catch(() => undefined)
@@ -32,25 +38,27 @@ export function useFileAccess(showToast: ShowToast, initiallyRequired = false) {
 
   async function openSettings() {
     if (!globalThis.chrome?.runtime?.sendMessage) {
-      showToast('请手动打开扩展管理页，并开启“允许访问文件网址”')
+      showToast(t('accessManual'))
       return
     }
     const result = await sendMessage('openExtensionSettings')
     if (result?.ok) return
 
-    const settingsUrl = `chrome://extensions/?id=${chrome.runtime.id}`
+    const settingsUrl = import.meta.env.BROWSER === 'firefox'
+      ? 'about:addons'
+      : `chrome://extensions/?id=${chrome.runtime.id}`
     try {
       await navigator.clipboard.writeText(settingsUrl)
-      showToast('扩展设置地址已复制，请粘贴到地址栏打开')
+      showToast(t('settingsCopied'))
     } catch {
-      showToast('请打开扩展管理页，并开启“允许访问文件网址”')
+      showToast(t('accessOpenPage'))
     }
   }
 
   function recheck() {
     void check(true).then((hasAccess) => {
-      if (hasAccess) showToast('本地文件访问已开启')
-      else if (hasAccess === false) showToast('尚未检测到权限，请确认开关已经开启')
+      if (hasAccess) showToast(t('accessNowEnabled'))
+      else if (hasAccess === false) showToast(t('accessStillDenied'))
     })
   }
 

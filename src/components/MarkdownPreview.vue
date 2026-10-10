@@ -1,10 +1,11 @@
 <template>
-  <article ref="element" class="markdown-body" :style="{ '--preview-font-size': `${fontSize}px` }" @scroll.passive="onScroll" @click="onClick" v-html="html || '<p class=empty-hint>预览内容会显示在这里</p>'"></article>
-  <button v-if="showBackToTop" class="back-to-top" title="返回顶部" aria-label="返回顶部" @click="scrollToTop">↑</button>
+  <article ref="element" class="markdown-body" :style="{ '--preview-font-size': `${fontSize}px` }" @scroll.passive="onScroll" @click="onClick" v-html="html || `<p class=empty-hint>${t('previewEmpty')}</p>`"></article>
+  <button v-if="showBackToTop" class="back-to-top" :title="t('backToTop')" :aria-label="t('backToTop')" @click="scrollToTop">↑</button>
 </template>
 
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
+import { t } from '../i18n'
 
 const props = defineProps<{ html: string; fontSize: number; theme: 'dark' | 'light' }>()
 const emit = defineEmits<{
@@ -56,7 +57,7 @@ async function onClick(event: MouseEvent) {
   const image = target.closest<HTMLImageElement>('img')
   if (image) {
     event.preventDefault()
-    emit('image', { src: image.currentSrc || image.src, alt: image.alt || '图片预览' })
+    emit('image', { src: image.currentSrc || image.src, alt: image.alt || t('imagePreview') })
     return
   }
   const copy = target.closest<HTMLButtonElement>('.copy-code')
@@ -65,9 +66,9 @@ async function onClick(event: MouseEvent) {
     try {
       await navigator.clipboard.writeText(text)
       copy.classList.add('copied')
-      copy.title = '已复制'
-      window.setTimeout(() => { copy.classList.remove('copied'); copy.title = '复制代码' }, 1400)
-    } catch { emit('toast', '复制失败，请手动选择代码') }
+      copy.title = t('copied')
+      window.setTimeout(() => { copy.classList.remove('copied'); copy.title = t('copyCode') }, 1400)
+    } catch { emit('toast', t('copyFailed')) }
     return
   }
   const link = target.closest<HTMLAnchorElement>('a')
